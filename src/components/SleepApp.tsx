@@ -25,10 +25,14 @@ import {
   recordNight,
 } from "@/lib/streaks";
 import {
+  type Narrator,
   cancelSpeech,
+  hasNaturalVoice,
+  listNarrators,
   listVoices,
   pauseSpeech,
   resumeSpeech,
+  speakSentences,
   speakText,
 } from "@/lib/speech";
 import { STORIES } from "@/lib/stories";
@@ -43,7 +47,8 @@ import {
 
 const TIMER_OPTIONS = [15, 30, 45, 60];
 const DEFAULT_PRESET = "rainy-cabin";
-const VOICE_PREVIEW = "The rain has settled in, and the room is warm. Rest now.";
+const VOICE_PREVIEW =
+  "You are standing at the edge of a quiet forest, just as evening begins to soften the sky.";
 
 export function SleepApp() {
   const [prefs, setPrefs] = useState<SleepPreferences | null>(null);
@@ -61,7 +66,10 @@ export function SleepApp() {
   const [streak, setStreak] = useState<StreakStats | null>(null);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [showMixer, setShowMixer] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [narrators, setNarrators] = useState<Narrator[]>([]);
+  const [allVoices, setAllVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [showAllVoices, setShowAllVoices] = useState(false);
+  const [naturalAvailable, setNaturalAvailable] = useState(true);
 
   const readingRef = useRef(false);
   const paragraphRef = useRef(-1);
@@ -102,7 +110,11 @@ export function SleepApp() {
     }
 
     // Voices load asynchronously on most platforms.
-    const updateVoices = () => setVoices(listVoices());
+    const updateVoices = () => {
+      setNarrators(listNarrators());
+      setAllVoices(listVoices());
+      setNaturalAvailable(hasNaturalVoice());
+    };
     updateVoices();
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       speechSynthesis.addEventListener?.("voiceschanged", updateVoices);
@@ -346,7 +358,7 @@ export function SleepApp() {
         return;
       }
       setParagraph(paragraphRef.current);
-      speakText(
+      speakSentences(
         story.paras[paragraphRef.current],
         {
           rate: rateRef.current,
@@ -356,7 +368,7 @@ export function SleepApp() {
         () => {
           if (!readingRef.current) return;
           paragraphRef.current += 1;
-          window.setTimeout(() => readNextRef.current(), 850);
+          window.setTimeout(() => readNextRef.current(), 1100);
         },
       );
     };
@@ -384,12 +396,17 @@ export function SleepApp() {
     }
   };
 
-  const previewVoice = () => {
-    if (!prefs) return;
+  /** Selecting a narrator also plays a short sample so choosing is instant. */
+  const chooseNarrator = (name: string | null) => {
+    if (!prefs || reading) {
+      updatePrefs({ voiceName: name });
+      return;
+    }
+    updatePrefs({ voiceName: name });
     speakText(VOICE_PREVIEW, {
       rate: prefs.rate,
       pitch: prefs.pitch,
-      voiceName: prefs.voiceName,
+      voiceName: name,
     });
   };
 
@@ -498,6 +515,10 @@ export function SleepApp() {
     timerLeft == null
       ? ""
       : `${Math.floor(timerLeft / 60)}:${String(timerLeft % 60).padStart(2, "0")}`;
+  const showEdgeTip =
+    !naturalAvailable &&
+    typeof navigator !== "undefined" &&
+    /Windows/i.test(navigator.userAgent);
 
   return (
     <div className="relative min-h-screen">
@@ -793,136 +814,221 @@ export function SleepApp() {
 
         {/* ——— Stories ——— */}
         {tab === "stories" && selectedStory && (
-          <section className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-            <div className="flex flex-col gap-2">
-              {STORIES.map((s, i) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  className={`story-row ${selectedStory.id === s.id ? "selected" : ""}`}
-                  onClick={() => {
-                    stopStory();
-                    updatePrefs({ storyId: s.id });
-                  }}
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-border font-mono text-xs text-muted">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span>
-                    <span className="block text-sm font-medium text-foreground">
-                      {s.title}
+          <section className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+            <div className="flex flex-col gap-3">
+              {STORIES.map((s) => {
+                const selected = selectedStory.id === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className={`relative h-28 overflow-hidden border text-left transition-all ${
+                      selected
+                        ? "border-accent/60"
+                        : "border-border hover:border-foreground/30"
+                    }`}
+                    onClick={() => {
+                      stopStory();
+                      updatePrefs({ storyId: s.id });
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${s.image})` }}
+                    />
+                    <span
+                      aria-hidden
+                      className="absolute inset-0"
+                      style={{
+                        background:
+                          "linear-gradient(90deg, rgba(9,11,10,0.85) 0%, rgba(9,11,10,0.45) 55%, rgba(9,11,10,0.15) 100%)",
+                      }}
+                    />
+                    <span className="relative z-10 flex h-full flex-col justify-end p-4">
+                      <span className="display block text-lg leading-tight text-foreground">
+                        {s.title}
+                      </span>
+                      <span className="mt-1 block text-xs text-muted">{s.meta}</span>
                     </span>
-                    <span className="mt-1 block text-xs text-muted">{s.meta}</span>
-                  </span>
-                </button>
-              ))}
+                    {selected && (
+                      <span className="absolute top-3 right-3 z-10 h-2 w-2 rounded-full bg-accent" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            <article className="panel flex flex-col gap-5 p-6 sm:p-7">
-              <div className="flex flex-wrap items-center gap-2">
-                <button type="button" className="btn btn-primary" onClick={startStory}>
-                  {reading ? "Restart" : "Read to me"}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={togglePauseStory}
-                  disabled={!reading}
-                >
-                  {paused ? "Resume" : "Pause"}
-                </button>
-                <button type="button" className="btn btn-ghost" onClick={stopStory}>
-                  Stop
-                </button>
+            <article className="panel flex flex-col overflow-hidden">
+              {/* Scene banner */}
+              <div className="relative h-44 shrink-0 sm:h-52">
+                <div
+                  aria-hidden
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${selectedStory.image})` }}
+                />
+                <div
+                  aria-hidden
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, rgba(9,11,10,0.1) 0%, rgba(9,11,10,0.55) 70%, var(--card) 100%)",
+                  }}
+                />
+                <div className="absolute right-0 bottom-0 left-0 z-10 flex items-end justify-between gap-4 p-5 sm:p-6">
+                  <div>
+                    <h3 className="display text-3xl text-foreground drop-shadow">
+                      {selectedStory.title}
+                    </h3>
+                    <p className="mt-1 text-xs text-muted">{selectedStory.meta}</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="border border-border bg-background/40 p-3 sm:col-span-2">
-                  <span className="mb-2 flex items-center justify-between text-xs text-muted">
-                    <span>Voice</span>
+              <div className="flex flex-col gap-5 p-6 sm:p-7">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button type="button" className="btn btn-primary" onClick={startStory}>
+                    {reading ? "Restart" : "Read to me"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={togglePauseStory}
+                    disabled={!reading}
+                  >
+                    {paused ? "Resume" : "Pause"}
+                  </button>
+                  <button type="button" className="btn btn-ghost" onClick={stopStory}>
+                    Stop
+                  </button>
+                </div>
+
+                {/* Narrator picker */}
+                <div className="border border-border bg-background/40 p-4">
+                  <p className="mb-3 text-xs text-muted">
+                    Narrator — tap to hear a sample
+                  </p>
+                  <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      className="text-accent hover:underline"
-                      onClick={previewVoice}
+                      className={`border px-3 py-2 text-sm transition-colors ${
+                        prefs.voiceName == null
+                          ? "border-accent/50 bg-accent/10 text-foreground"
+                          : "border-border text-muted hover:text-foreground"
+                      }`}
+                      onClick={() => chooseNarrator(null)}
                     >
-                      Preview
+                      Auto
                     </button>
-                  </span>
-                  <select
-                    value={prefs.voiceName ?? ""}
-                    onChange={(e) =>
-                      updatePrefs({ voiceName: e.target.value || null })
-                    }
-                    className="w-full border border-border bg-card px-2 py-2 text-sm text-foreground outline-none"
-                  >
-                    <option value="">Auto — best available on this device</option>
-                    {voices.map((v) => (
-                      <option key={v.name} value={v.name}>
-                        {v.name}
-                      </option>
+                    {narrators.map((n) => (
+                      <button
+                        key={n.name}
+                        type="button"
+                        className={`flex items-center gap-2 border px-3 py-2 text-sm transition-colors ${
+                          prefs.voiceName === n.name
+                            ? "border-accent/50 bg-accent/10 text-foreground"
+                            : "border-border text-muted hover:text-foreground"
+                        }`}
+                        onClick={() => chooseNarrator(n.name)}
+                      >
+                        {n.label}
+                        {n.tag !== "Standard" && (
+                          <span className="border border-accent/40 px-1.5 py-0.5 text-[10px] tracking-wide text-accent uppercase">
+                            {n.tag}
+                          </span>
+                        )}
+                      </button>
                     ))}
-                  </select>
-                  <span className="mt-2 block text-xs text-muted">
-                    Tip: many devices hide their most natural voices — try a few.
-                  </span>
-                </label>
-                <label className="border border-border bg-background/40 p-3">
-                  <span className="mb-2 flex justify-between text-xs text-muted">
-                    <span>Speed</span>
-                    <span>
-                      {prefs.rate < 0.66
-                        ? "Very slow"
-                        : prefs.rate < 0.78
-                          ? "Slow"
-                          : "Relaxed"}
-                    </span>
-                  </span>
-                  <input
-                    type="range"
-                    min={0.55}
-                    max={0.9}
-                    step={0.01}
-                    value={prefs.rate}
-                    onChange={(e) => updatePrefs({ rate: parseFloat(e.target.value) })}
-                  />
-                </label>
-                <label className="border border-border bg-background/40 p-3">
-                  <span className="mb-2 flex justify-between text-xs text-muted">
-                    <span>Warmth</span>
-                    <span>
-                      {prefs.pitch < 0.82
-                        ? "Warm"
-                        : prefs.pitch < 0.94
-                          ? "Gentle"
-                          : "Bright"}
-                    </span>
-                  </span>
-                  <input
-                    type="range"
-                    min={0.72}
-                    max={1.02}
-                    step={0.01}
-                    value={prefs.pitch}
-                    onChange={(e) => updatePrefs({ pitch: parseFloat(e.target.value) })}
-                  />
-                </label>
-              </div>
-
-              <div className="h-px bg-border">
-                <div
-                  className="h-px bg-accent transition-[width] duration-500"
-                  style={{ width: `${storyFill}%` }}
-                />
-              </div>
-              <div className="max-h-[300px] overflow-auto border border-border bg-background/50 p-5 text-[0.95rem] leading-[1.9] text-muted">
-                {selectedStory.paras.map((p, i) => (
-                  <p
-                    key={i}
-                    className={`mb-4 last:mb-0 ${i === paragraph ? "text-foreground" : ""}`}
+                  </div>
+                  {showEdgeTip && (
+                    <p className="mt-3 text-xs text-muted">
+                      Tip: on Windows, opening this app in{" "}
+                      <span className="text-foreground">Microsoft Edge</span> unlocks
+                      free natural-sounding narrator voices.
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    className="mt-3 text-xs text-muted underline-offset-2 hover:text-foreground hover:underline"
+                    onClick={() => setShowAllVoices((v) => !v)}
                   >
-                    {p}
-                  </p>
-                ))}
+                    {showAllVoices ? "Hide all voices" : `All device voices (${allVoices.length})`}
+                  </button>
+                  {showAllVoices && (
+                    <select
+                      value={prefs.voiceName ?? ""}
+                      onChange={(e) => chooseNarrator(e.target.value || null)}
+                      className="mt-2 w-full border border-border bg-card px-2 py-2 text-sm text-foreground outline-none"
+                    >
+                      <option value="">Auto — best available</option>
+                      {allVoices.map((v) => (
+                        <option key={v.name} value={v.name}>
+                          {v.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="border border-border bg-background/40 p-3">
+                    <span className="mb-2 flex justify-between text-xs text-muted">
+                      <span>Speed</span>
+                      <span>
+                        {prefs.rate < 0.66
+                          ? "Very slow"
+                          : prefs.rate < 0.78
+                            ? "Slow"
+                            : "Relaxed"}
+                      </span>
+                    </span>
+                    <input
+                      type="range"
+                      min={0.55}
+                      max={0.9}
+                      step={0.01}
+                      value={prefs.rate}
+                      onChange={(e) => updatePrefs({ rate: parseFloat(e.target.value) })}
+                    />
+                  </label>
+                  <label className="border border-border bg-background/40 p-3">
+                    <span className="mb-2 flex justify-between text-xs text-muted">
+                      <span>Warmth</span>
+                      <span>
+                        {prefs.pitch < 0.82
+                          ? "Warm"
+                          : prefs.pitch < 0.94
+                            ? "Gentle"
+                            : "Bright"}
+                      </span>
+                    </span>
+                    <input
+                      type="range"
+                      min={0.72}
+                      max={1.02}
+                      step={0.01}
+                      value={prefs.pitch}
+                      onChange={(e) => updatePrefs({ pitch: parseFloat(e.target.value) })}
+                    />
+                  </label>
+                </div>
+
+                <div className="h-px bg-border">
+                  <div
+                    className="h-px bg-accent transition-[width] duration-500"
+                    style={{ width: `${storyFill}%` }}
+                  />
+                </div>
+                <div className="max-h-[280px] overflow-auto border border-border bg-background/50 p-5 text-[0.95rem] leading-[1.9] text-muted">
+                  {selectedStory.paras.map((p, i) => (
+                    <p
+                      key={i}
+                      className={`mb-4 last:mb-0 ${i === paragraph ? "text-foreground" : ""}`}
+                    >
+                      {p}
+                    </p>
+                  ))}
+                </div>
               </div>
             </article>
           </section>

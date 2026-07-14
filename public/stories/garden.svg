@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141c2c"/>
+      <stop offset="0.55" stop-color="#101a1c"/>
+      <stop offset="1" stop-color="#0b100c"/>
+    </linearGradient>
+    <radialGradient id="moong" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#e7ecd8" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#e7ecd8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="lant" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f0c26a" stop-opacity="0.9"/>
+      <stop offset="0.4" stop-color="#d9a13e" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#d9a13e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#sky)"/>
+  <circle cx="150" cy="100" r="130" fill="url(#moong)"/>
+  <circle cx="150" cy="100" r="30" fill="#e7ecd8" opacity="0.8"/>
+  <!-- stars -->
+  <g fill="#d5dccc">
+    <circle cx="320" cy="60" r="1.3" opacity="0.6"/><circle cx="420" cy="40" r="1.2" opacity="0.55"/>
+    <circle cx="520" cy="80" r="1.4" opacity="0.6"/><circle cx="620" cy="50" r="1.1" opacity="0.5"/>
+    <circle cx="700" cy="110" r="1.3" opacity="0.6"/><circle cx="260" cy="120" r="1.1" opacity="0.5"/>
+  </g>
+  <!-- stone wall -->
+  <path fill="#131711" d="M0 330 L800 315 L800 500 L0 500 Z"/>
+  <g stroke="#1f251d" stroke-width="1.5" opacity="0.8">
+    <line x1="0" y1="360" x2="800" y2="346"/>
+    <line x1="0" y1="392" x2="800" y2="378"/>
+    <line x1="0" y1="424" x2="800" y2="412"/>
+    <line x1="90" y1="332" x2="90" y2="360"/><line x1="230" y1="358" x2="230" y2="390"/>
+    <line x1="370" y1="328" x2="370" y2="356"/><line x1="510" y1="352" x2="510" y2="384"/>
+    <line x1="650" y1="322" x2="650" y2="350"/><line x1="160" y1="390" x2="160" y2="422"/>
+    <line x1="440" y1="386" x2="440" y2="418"/><line x1="720" y1="380" x2="720" y2="412"/>
+  </g>
+  <!-- wooden gate -->
+  <path d="M560 500 L560 400 Q600 372 640 400 L640 500 Z" fill="#0c0f0a"/>
+  <g stroke="#241d12" stroke-width="3" opacity="0.9">
+    <line x1="575" y1="398" x2="575" y2="500"/>
+    <line x1="600" y1="388" x2="600" y2="500"/>
+    <line x1="625" y1="398" x2="625" y2="500"/>
+  </g>
+  <!-- crooked apple tree -->
+  <g fill="#080c08">
+    <path d="M300 500 Q290 430 305 380 Q315 345 295 320 Q330 335 340 300 Q348 330 385 322 Q360 345 372 372 Q345 360 338 395 Q332 440 342 500 Z"/>
+    <ellipse cx="290" cy="310" rx="55" ry="35"/>
+    <ellipse cx="360" cy="290" rx="65" ry="40"/>
+    <ellipse cx="330" cy="255" rx="50" ry="32"/>
+  </g>
+  <!-- hanging lanterns -->
+  <g>
+    <line x1="310" y1="330" x2="310" y2="352" stroke="#241d12" stroke-width="1.5"/>
+    <circle cx="310" cy="358" r="26" fill="url(#lant)"/>
+    <circle cx="310" cy="358" r="4.5" fill="#f2cd82"/>
+    <line x1="368" y1="318" x2="368" y2="336" stroke="#241d12" stroke-width="1.5"/>
+    <circle cx="368" cy="342" r="22" fill="url(#lant)"/>
+    <circle cx="368" cy="342" r="4" fill="#f2cd82"/>
+  </g>
+  <!-- fountain -->
+  <g>
+    <ellipse cx="490" cy="470" rx="60" ry="12" fill="#0d1218"/>
+    <ellipse cx="490" cy="466" rx="44" ry="8" fill="#1d2a38" opacity="0.8"/>
+    <path d="M490 466 q-4 -26 0 -34 q4 8 0 34" stroke="#7d95a8" stroke-width="2" fill="none" opacity="0.5"/>
+  </g>
+  <!-- night flowers -->
+  <g fill="#c9d3bd" opacity="0.7">
+    <circle cx="120" cy="470" r="4"/><circle cx="140" cy="482" r="3"/><circle cx="102" cy="484" r="3"/>
+    <circle cx="700" cy="470" r="4"/><circle cx="722" cy="482" r="3"/><circle cx="682" cy="484" r="3"/>
+  </g>
+  <g stroke="#2a3524" stroke-width="2">
+    <line x1="120" y1="474" x2="120" y2="496"/><line x1="140" y1="486" x2="140" y2="500"/>
+    <line x1="700" y1="474" x2="700" y2="496"/><line x1="722" y1="486" x2="722" y2="500"/>
+  </g>
+  <!-- fireflies -->
+  <g>
+    <circle cx="220" cy="400" r="2.2" fill="#3ecf8e" opacity="0.8"/>
+    <circle cx="430" cy="370" r="1.8" fill="#d9a13e" opacity="0.8"/>
+    <circle cx="530" cy="410" r="2" fill="#3ecf8e" opacity="0.7"/>
+    <circle cx="660" cy="360" r="1.7" fill="#d9a13e" opacity="0.75"/>
+    <circle cx="180" cy="350" r="1.6" fill="#3ecf8e" opacity="0.6"/>
+    <circle cx="470" cy="330" r="1.5" fill="#3ecf8e" opacity="0.6"/>
+    <circle cx="740" cy="430" r="2" fill="#3ecf8e" opacity="0.7"/>
+  </g>
+</svg>

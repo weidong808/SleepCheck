@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c1626"/>
+      <stop offset="0.6" stop-color="#131019"/>
+      <stop offset="1" stop-color="#0b0a0e"/>
+    </linearGradient>
+    <radialGradient id="lampg" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f0c26a" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#f0c26a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#sky)"/>
+  <!-- crescent moon -->
+  <circle cx="660" cy="80" r="30" fill="#e6e3cf" opacity="0.85"/>
+  <circle cx="672" cy="70" r="28" fill="#1c1626"/>
+  <!-- stars -->
+  <g fill="#cfc9d8">
+    <circle cx="80" cy="60" r="1.4" opacity="0.7"/><circle cx="200" cy="110" r="1.1" opacity="0.5"/>
+    <circle cx="330" cy="50" r="1.3" opacity="0.6"/><circle cx="470" cy="95" r="1.2" opacity="0.55"/>
+    <circle cx="560" cy="45" r="1.2" opacity="0.6"/><circle cx="740" cy="140" r="1.1" opacity="0.5"/>
+  </g>
+  <!-- rolling hills -->
+  <path fill="#120f18" d="M0 280 Q150 220 320 265 Q500 310 660 250 Q740 230 800 250 L800 500 L0 500 Z"/>
+  <path fill="#0d0b11" d="M0 340 Q200 300 420 330 Q640 360 800 320 L800 500 L0 500 Z"/>
+  <!-- distant farmhouse light -->
+  <circle cx="120" cy="300" r="14" fill="url(#lampg)"/>
+  <circle cx="120" cy="300" r="2.2" fill="#e9b45a" opacity="0.9"/>
+  <!-- river catching moonlight -->
+  <path d="M520 500 Q560 440 620 415 Q690 388 800 385 L800 400 Q700 402 640 428 Q580 452 560 500 Z" fill="#28324a" opacity="0.5"/>
+  <path d="M600 430 q20 -8 40 -12" stroke="#e6e3cf" stroke-width="1.5" fill="none" opacity="0.25"/>
+  <!-- track bed -->
+  <path fill="#0a090c" d="M0 452 L800 428 L800 448 L0 476 Z"/>
+  <line x1="0" y1="458" x2="800" y2="434" stroke="#3a3242" stroke-width="2" opacity="0.7"/>
+  <!-- train -->
+  <g>
+    <rect x="120" y="352" width="560" height="78" rx="10" fill="#0c0a10" transform="rotate(-2 400 390)"/>
+    <g transform="rotate(-2 400 390)">
+      <rect x="150" y="374" width="34" height="26" rx="3" fill="#e9b45a" opacity="0.9"/>
+      <rect x="205" y="374" width="34" height="26" rx="3" fill="#e9b45a" opacity="0.85"/>
+      <rect x="260" y="374" width="34" height="26" rx="3" fill="#f0c26a" opacity="0.9"/>
+      <rect x="315" y="374" width="34" height="26" rx="3" fill="#e9b45a" opacity="0.8"/>
+      <rect x="370" y="374" width="34" height="26" rx="3" fill="#e9b45a" opacity="0.9"/>
+      <rect x="425" y="374" width="34" height="26" rx="3" fill="#f0c26a" opacity="0.85"/>
+      <rect x="480" y="374" width="34" height="26" rx="3" fill="#e9b45a" opacity="0.9"/>
+      <rect x="535" y="374" width="34" height="26" rx="3" fill="#e9b45a" opacity="0.8"/>
+      <rect x="590" y="374" width="34" height="26" rx="3" fill="#f0c26a" opacity="0.88"/>
+      <rect x="120" y="418" width="560" height="6" fill="#181320"/>
+    </g>
+    <!-- soft glow under windows -->
+    <ellipse cx="400" cy="440" rx="290" ry="14" fill="#e9b45a" opacity="0.05"/>
+  </g>
+  <!-- motion streaks -->
+  <g stroke="#8d80a0" stroke-opacity="0.12" stroke-width="2" stroke-linecap="round">
+    <line x1="60" y1="368" x2="120" y2="366"/>
+    <line x1="30" y1="396" x2="105" y2="393"/>
+    <line x1="70" y1="420" x2="130" y2="418"/>
+  </g>
+</svg>

@@ -2,6 +2,7 @@ export type Story = {
   id: string;
   title: string;
   meta: string;
+  image: string;
   paras: string[];
 };
 
@@ -10,6 +11,7 @@ export const STORIES: Story[] = [
     id: "forest",
     title: "The Lantern Forest",
     meta: "Rain pairing · about 8 minutes",
+    image: "/stories/forest.svg",
     paras: [
       "You are standing at the edge of a quiet forest, just as evening begins to soften the sky. The path ahead is covered in moss, and every step you take feels slow, safe, and easy.",
       "A small lantern glows in your hand. Its warm circle of light moves gently over roots, stones, and tiny ferns. Nothing asks anything of you here. The forest is simply holding the night open.",
@@ -25,6 +27,7 @@ export const STORIES: Story[] = [
     id: "cove",
     title: "The Moonlit Cove",
     meta: "Ocean pairing · about 8 minutes",
+    image: "/stories/cove.svg",
     paras: [
       "You arrive at a sheltered cove under a pale moon. The sea is calm, and the water moves in long silver lines toward the sand.",
       "The beach is warm from the day. As you walk, the sand gives gently beneath your feet, and the air carries the clean scent of salt and night flowers growing near the cliffs.",
@@ -40,6 +43,7 @@ export const STORIES: Story[] = [
     id: "cottage",
     title: "The Snow Cottage",
     meta: "Brown noise pairing · about 8 minutes",
+    image: "/stories/cottage.svg",
     paras: [
       "High in the mountains, a small cottage glows through falling snow. Its windows are amber, and smoke curls slowly from the chimney into the cold blue air.",
       "You open the door and step inside. Warmth gathers around you at once, deep and steady, the kind of warmth that makes every muscle remember how to let go.",
@@ -55,6 +59,7 @@ export const STORIES: Story[] = [
     id: "train",
     title: "The Night Train",
     meta: "Creek pairing · about 8 minutes",
+    image: "/stories/train.svg",
     paras: [
       "You are settled into a window seat on a slow night train, crossing a wide and quiet countryside. The carriage is warm, the lights are low, and the seat holds you like it was made for you.",
       "Outside, the land moves past in soft shapes. Dark fields, a line of hills, the occasional lamp of a distant farmhouse. Nothing out there needs you. Everything is simply passing.",
@@ -70,6 +75,7 @@ export const STORIES: Story[] = [
     id: "garden",
     title: "The Walled Garden",
     meta: "Summer night pairing · about 8 minutes",
+    image: "/stories/garden.svg",
     paras: [
       "Behind an old stone wall, there is a garden that only appears at dusk. You push open the wooden gate and step onto a path of warm flagstones, still holding the last heat of the day.",
       "The air smells of lavender and cut grass. Crickets are singing somewhere in the hedges, unhurried, the sound rising and settling like slow breathing.",

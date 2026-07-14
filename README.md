@@ -11,7 +11,7 @@ Calm wind-down companion: natural soundscapes, bedtime stories, guided breathing
 | Sounds | Studio-quality ambience loops (rain, ocean, fire, wind, creek, crickets) rendered offline with event-based DSP, played gaplessly via Web Audio; noise colors + binaural synthesized live |
 | Scenes | One-tap presets (Rainy Cabin, Moonlit Shore, …) with a single big play button |
 | Share | Shareable mix links (`?mix=rain:0.50,fire:0.42`) via Web Share API / clipboard |
-| Stories | 5 hand-written stories + device **speechSynthesis** TTS with a voice picker & preview |
+| Stories | 5 illustrated stories + device **speechSynthesis** TTS with narrator chips, sentence pacing, and preview |
 | Breathe | Local guided breathing modes |
 | Timer | Fade-to-silence sleep timer, quick picks + custom minutes, inline in the player |
 | Streak | Local-only nightly wind-down streak (a night spans until 5am) |
