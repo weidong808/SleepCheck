@@ -58,11 +58,26 @@ export function listVoices(): SpeechSynthesisVoice[] {
     .sort((a, b) => quality(b) - quality(a));
 }
 
+export type NarratorGender = "f" | "m" | "n";
+
 export type Narrator = {
   name: string; // exact system voice name (stored in prefs)
   label: string; // friendly display name
   tag: string; // "Natural" | "Enhanced" | "Standard"
+  gender: NarratorGender; // best-effort hint used only for the avatar art
 };
+
+const FEMALE_HINT =
+  /female|woman|samantha|ava|allison|susan|karen|moira|tessa|fiona|serena|martha|aria|jenny|sonia|libby|zira|hazel|catherine|emma|michelle|natasha|clara|salli|joanna|kendra|kimberly|ivy|amy|nicole|olivia|kate|stephanie|victoria|princess|vicki|veena|lekha|alice|anna|ellen|laura|milena|paulina|zosia|luciana|joana|monica|kyoko|yuna|tingting|sinji|meijia/i;
+
+const MALE_HINT =
+  /male|man\b|daniel|arthur|guy|ryan|david|mark\b|james|george|thomas|alex\b|fred|oliver|liam|noah|brian|eric|christopher|william|aaron|nathan|justin|kevin|richard|sean|jacques|diego|jorge|juan|luca|maged|otoya|xander|rishi|gordon|lee\b/i;
+
+function genderOf(name: string): NarratorGender {
+  if (FEMALE_HINT.test(name)) return "f";
+  if (MALE_HINT.test(name)) return "m";
+  return "n";
+}
 
 function friendlyLabel(name: string): string {
   return (
@@ -91,7 +106,7 @@ export function listNarrators(max = 6): Narrator[] {
     const label = friendlyLabel(v.name);
     if (seen.has(label)) continue;
     seen.add(label);
-    out.push({ name: v.name, label, tag: tagOf(v.name) });
+    out.push({ name: v.name, label, tag: tagOf(v.name), gender: genderOf(v.name) });
     if (out.length >= max) break;
   }
   return out;

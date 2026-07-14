@@ -7,6 +7,7 @@ import {
   IconPlay,
   IconShare,
   IconStop,
+  NarratorAvatar,
   soundIcon,
 } from "@/components/Icons";
 import { BREATH_MODES } from "@/lib/breath";
@@ -922,26 +923,34 @@ export function SleepApp() {
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      className={`border px-3 py-2 text-sm transition-colors ${
+                      className={`flex items-center gap-2 border py-1.5 pr-3 pl-1.5 text-sm transition-colors ${
                         prefs.voiceName == null
                           ? "border-accent/50 bg-accent/10 text-foreground"
                           : "border-border text-muted hover:text-foreground"
                       }`}
                       onClick={() => chooseNarrator(null)}
                     >
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full border border-accent/40 bg-accent/10">
+                        <IconMoon className="h-4 w-4 text-accent" />
+                      </span>
                       Auto
                     </button>
                     {narrators.map((n) => (
                       <button
                         key={n.name}
                         type="button"
-                        className={`flex items-center gap-2 border px-3 py-2 text-sm transition-colors ${
+                        className={`flex items-center gap-2 border py-1.5 pr-3 pl-1.5 text-sm transition-colors ${
                           prefs.voiceName === n.name
                             ? "border-accent/50 bg-accent/10 text-foreground"
                             : "border-border text-muted hover:text-foreground"
                         }`}
                         onClick={() => chooseNarrator(n.name)}
                       >
+                        <NarratorAvatar
+                          name={n.name}
+                          gender={n.gender}
+                          className="h-7 w-7 shrink-0 rounded-full"
+                        />
                         {n.label}
                         {n.tag !== "Standard" && (
                           <span className="border border-accent/40 px-1.5 py-0.5 text-[10px] tracking-wide text-accent uppercase">

@@ -111,6 +111,61 @@ export function IconShare({ className }: IconProps) {
   );
 }
 
+/**
+ * Deterministic narrator portrait: each voice gets its own gradient hue
+ * (hashed from the voice name) and a soft silhouette whose hair shape
+ * follows a best-effort gender hint. Purely decorative.
+ */
+export function NarratorAvatar({
+  name,
+  gender = "n",
+  className,
+}: {
+  name: string;
+  gender?: "f" | "m" | "n";
+  className?: string;
+}) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  const hue = h % 360;
+  const gid = `nav-${h.toString(36)}`;
+  const ink = "#0a0e0c";
+  return (
+    <svg viewBox="0 0 40 40" className={className} aria-hidden>
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor={`hsl(${hue} 42% 40%)`} />
+          <stop offset="1" stopColor={`hsl(${(hue + 46) % 360} 48% 19%)`} />
+        </linearGradient>
+      </defs>
+      <circle cx="20" cy="20" r="20" fill={`url(#${gid})`} />
+      <circle
+        cx={11 + (h % 8)}
+        cy={7 + (h % 5)}
+        r="1.1"
+        fill="#f2e9cf"
+        opacity="0.75"
+      />
+      {gender === "f" && (
+        <path
+          d="M20 6.5 C13 6.5 10.2 11.5 10.6 17 C10.9 21 9.8 25.5 8.6 28 L15 27 L25 27 L31.4 28 C30.2 25.5 29.1 21 29.4 17 C29.8 11.5 27 6.5 20 6.5 Z"
+          fill={ink}
+          opacity="0.82"
+        />
+      )}
+      {gender === "m" && (
+        <path
+          d="M12.6 17 C12.2 11 15.4 8 20 8 C24.6 8 27.8 11 27.4 17 L26.4 15.2 C25.8 12.2 23.6 10.8 20 10.8 C16.4 10.8 14.2 12.2 13.6 15.2 Z"
+          fill={ink}
+          opacity="0.82"
+        />
+      )}
+      <circle cx="20" cy="17" r="6.5" fill={ink} />
+      <path d="M8 40 C8 31.5 13 28.5 20 28.5 C27 28.5 32 31.5 32 40 Z" fill={ink} />
+    </svg>
+  );
+}
+
 const MAP: Record<string, (p: IconProps) => React.ReactElement> = {
   rain: IconRain,
   ocean: IconOcean,
