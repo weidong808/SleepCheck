@@ -30,10 +30,12 @@ export default function AboutPage() {
       <div className="mt-8 space-y-5 text-base leading-relaxed text-muted">
         <p className="text-foreground/90">{APP_DESCRIPTION}</p>
         <p>
-          Sounds are synthesized in your browser with the Web Audio API. Stories
-          are written content read with your device&apos;s built-in speech voice
-          — not a cloud AI narration service. Preferences stay in local storage
-          on this device. There is no account and no server-side sleep data.
+          Soundscapes are studio-quality ambience loops rendered offline and
+          played locally — layer rain, fire, wind, waves, and more, or mix your
+          own. Stories are written content read with your device&apos;s built-in
+          speech voice — not a cloud AI narration service. Preferences stay in
+          local storage on this device. There is no account and no server-side
+          sleep data.
         </p>
         <p>
           <span className="text-foreground">Wellness disclaimer:</span>{" "}

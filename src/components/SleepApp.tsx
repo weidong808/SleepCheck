@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { soundIcon } from "@/components/Icons";
+import {
+  IconMoon,
+  IconPlay,
+  IconShare,
+  IconStop,
+  soundIcon,
+} from "@/components/Icons";
 import { BREATH_MODES } from "@/lib/breath";
-import { APP_NAME, SITE_HOME_URL } from "@/lib/brand";
+import { APP_NAME } from "@/lib/brand";
 import { audioEngine } from "@/lib/audioEngine";
 import {
   PRESETS,
@@ -12,7 +18,7 @@ import {
   decodeMix,
   mixLabel,
 } from "@/lib/presets";
-import { SOUNDS } from "@/lib/sounds";
+import { SAMPLE_SRCS, SOUNDS } from "@/lib/sounds";
 import {
   type StreakStats,
   getStreakStats,
@@ -20,6 +26,7 @@ import {
 } from "@/lib/streaks";
 import {
   cancelSpeech,
+  listVoices,
   pauseSpeech,
   resumeSpeech,
   speakText,
@@ -35,6 +42,8 @@ import {
 } from "@/lib/storage";
 
 const TIMER_OPTIONS = [15, 30, 45, 60];
+const DEFAULT_PRESET = "rainy-cabin";
+const VOICE_PREVIEW = "The rain has settled in, and the room is warm. Rest now.";
 
 export function SleepApp() {
   const [prefs, setPrefs] = useState<SleepPreferences | null>(null);
@@ -46,21 +55,25 @@ export function SleepApp() {
   const [breathCount, setBreathCount] = useState(4);
   const [breathBig, setBreathBig] = useState(false);
   const [timerLeft, setTimerLeft] = useState<number | null>(null);
-  const [timerTotal, setTimerTotal] = useState(0);
   const [customMins, setCustomMins] = useState("");
   const [sharedMix, setSharedMix] = useState<Record<string, number> | null>(null);
   const [shareNote, setShareNote] = useState<string | null>(null);
   const [streak, setStreak] = useState<StreakStats | null>(null);
+  const [activePreset, setActivePreset] = useState<string | null>(null);
+  const [showMixer, setShowMixer] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   const readingRef = useRef(false);
   const paragraphRef = useRef(-1);
   const storyIdRef = useRef<string | null>(null);
   const rateRef = useRef(0.68);
   const pitchRef = useRef(0.86);
+  const voiceNameRef = useRef<string | null>(null);
   const breathVoiceRef = useRef(true);
   const breathTimerRef = useRef<number | null>(null);
   const sleepTimerRef = useRef<number | null>(null);
   const readNextRef = useRef<() => void>(() => {});
+  const preloadedRef = useRef(false);
 
   useEffect(() => {
     const loaded = loadPreferences();
@@ -70,12 +83,9 @@ export function SleepApp() {
       else sounds[s.id] = { ...sounds[s.id], active: false };
     }
     if (!loaded.storyId) loaded.storyId = STORIES[0]?.id ?? null;
-    // Defer to avoid sync setState-in-effect lint on hydration bootstrap.
     const t = window.setTimeout(() => {
       setPrefs({ ...loaded, sounds });
       setStreak(getStreakStats());
-
-      // Shared mix or preset arriving via URL (?mix=rain:0.4,fire:0.3 | ?preset=rainy-cabin).
       const params = new URLSearchParams(window.location.search);
       const rawMix = params.get("mix");
       const presetId = params.get("preset");
@@ -91,7 +101,28 @@ export function SleepApp() {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
 
-    return () => window.clearTimeout(t);
+    // Voices load asynchronously on most platforms.
+    const updateVoices = () => setVoices(listVoices());
+    updateVoices();
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      speechSynthesis.addEventListener?.("voiceschanged", updateVoices);
+    }
+
+    // Warm the audio cache on first interaction (user gesture unlocks audio).
+    const warm = () => {
+      if (preloadedRef.current) return;
+      preloadedRef.current = true;
+      audioEngine.preload(SAMPLE_SRCS);
+    };
+    window.addEventListener("pointerdown", warm, { once: true });
+
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("pointerdown", warm);
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        speechSynthesis.removeEventListener?.("voiceschanged", updateVoices);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -100,6 +131,7 @@ export function SleepApp() {
     storyIdRef.current = prefs.storyId;
     rateRef.current = prefs.rate;
     pitchRef.current = prefs.pitch;
+    voiceNameRef.current = prefs.voiceName;
     breathVoiceRef.current = prefs.breathVoice;
   }, [prefs]);
 
@@ -116,7 +148,6 @@ export function SleepApp() {
     setPrefs((prev) => (prev ? { ...prev, ...patch } : prev));
   }, []);
 
-  /** Count tonight toward the wind-down streak. */
   const markWindDown = useCallback(() => {
     setStreak(recordNight());
   }, []);
@@ -131,29 +162,27 @@ export function SleepApp() {
     [prefs?.storyId],
   );
 
-  const statusText = reading
-    ? "Story reading"
-    : activeSounds.length
-      ? "Soundscape playing"
-      : "Ready for tonight";
+  const playing = reading || activeSounds.length > 0;
 
   const nowTitle = reading
-    ? `Reading ${selectedStory?.title ?? "story"}`
-    : activeSounds.length
-      ? activeSounds.map((s) => s.label).join(" + ")
-      : "No audio playing";
+    ? selectedStory?.title ?? "Story"
+    : activePreset
+      ? PRESETS.find((p) => p.id === activePreset)?.name ??
+        activeSounds.map((s) => s.label).join(" + ")
+      : activeSounds.length
+        ? activeSounds.map((s) => s.label).join(" + ")
+        : "Ready for tonight";
 
   const nowSub = reading
-    ? "A calm browser voice is guiding the story."
+    ? "Reading softly. Close your eyes."
     : activeSounds.length
-      ? "Soundscape is gently playing."
-      : "Tap rain, ocean, or a story to begin.";
+      ? "Playing. Set a timer and put the phone down."
+      : "Pick a scene below, or just press play.";
 
-  // Lock-screen / media-key controls while the soundscape plays.
+  // Lock-screen / media-key controls.
   useEffect(() => {
     if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
     const ms = navigator.mediaSession;
-    const playing = reading || activeSounds.length > 0;
     if (!playing) {
       ms.playbackState = "none";
       ms.metadata = null;
@@ -180,7 +209,7 @@ export function SleepApp() {
         ms.playbackState = "playing";
       });
     } catch {
-      // Some browsers reject unsupported handlers.
+      /* unsupported handlers */
     }
     return () => {
       try {
@@ -190,7 +219,13 @@ export function SleepApp() {
         /* noop */
       }
     };
-  }, [reading, activeSounds, nowTitle]);
+  }, [playing, nowTitle]);
+
+  const startSound = (id: string, vol: number) => {
+    const def = SOUNDS.find((s) => s.id === id);
+    if (!def) return;
+    audioEngine.start(id, def.type, vol, def.src);
+  };
 
   const toggleSound = (id: string) => {
     if (!prefs) return;
@@ -198,21 +233,19 @@ export function SleepApp() {
     if (!def) return;
     const current = prefs.sounds[id] ?? { active: false, vol: def.vol };
     const nextActive = !current.active;
-    const nextSounds = {
-      ...prefs.sounds,
-      [id]: { ...current, active: nextActive },
-    };
     if (nextActive) {
-      audioEngine.start(id, def.type, current.vol);
+      startSound(id, current.vol);
       markWindDown();
     } else {
       audioEngine.stop(id);
     }
-    updatePrefs({ sounds: nextSounds });
+    setActivePreset(null);
+    updatePrefs({
+      sounds: { ...prefs.sounds, [id]: { ...current, active: nextActive } },
+    });
   };
 
-  /** Replace the current soundscape with a preset / shared mix. */
-  const applyMix = (mix: Record<string, number>) => {
+  const applyMix = (mix: Record<string, number>, presetId?: string) => {
     if (!prefs) return;
     audioEngine.stopAll();
     const nextSounds: Record<string, SoundState> = { ...prefs.sounds };
@@ -220,13 +253,51 @@ export function SleepApp() {
       nextSounds[id] = { ...nextSounds[id], active: false };
     }
     for (const [id, vol] of Object.entries(mix)) {
-      const def = SOUNDS.find((s) => s.id === id);
-      if (!def) continue;
+      if (!SOUNDS.some((s) => s.id === id)) continue;
       nextSounds[id] = { active: true, vol };
-      audioEngine.start(id, def.type, vol);
+      startSound(id, vol);
     }
-    updatePrefs({ sounds: nextSounds, tab: "sounds" });
+    setActivePreset(presetId ?? null);
+    updatePrefs({
+      sounds: nextSounds,
+      tab: "sleep",
+      ...(presetId ? { lastPresetId: presetId } : {}),
+    });
     markWindDown();
+  };
+
+  const stopStory = useCallback(() => {
+    readingRef.current = false;
+    setReading(false);
+    setPaused(false);
+    setParagraph(-1);
+    paragraphRef.current = -1;
+    cancelSpeech();
+  }, []);
+
+  const stopAllAudio = useCallback(() => {
+    audioEngine.stopAll();
+    stopStory();
+    setActivePreset(null);
+    setPrefs((prev) => {
+      if (!prev) return prev;
+      const nextSounds = { ...prev.sounds };
+      for (const id of Object.keys(nextSounds)) {
+        nextSounds[id] = { ...nextSounds[id], active: false };
+      }
+      return { ...prev, sounds: nextSounds };
+    });
+  }, [stopStory]);
+
+  /** The one big button. */
+  const togglePlay = () => {
+    if (playing) {
+      stopAllAudio();
+      return;
+    }
+    const presetId = prefs?.lastPresetId ?? DEFAULT_PRESET;
+    const preset = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0];
+    applyMix(preset.mix, preset.id);
   };
 
   const shareMix = async () => {
@@ -255,7 +326,7 @@ export function SleepApp() {
         setShareNote(null);
       }
     }
-    window.setTimeout(() => setShareNote(null), 2500);
+    window.setTimeout(() => setShareNote(null), 2200);
   };
 
   const setSoundVol = (id: string, vol: number) => {
@@ -263,29 +334,7 @@ export function SleepApp() {
     const current = prefs.sounds[id];
     if (!current) return;
     audioEngine.setVol(id, vol);
-    updatePrefs({
-      sounds: { ...prefs.sounds, [id]: { ...current, vol } },
-    });
-  };
-
-  const stopStory = useCallback(() => {
-    readingRef.current = false;
-    setReading(false);
-    setPaused(false);
-    setParagraph(-1);
-    paragraphRef.current = -1;
-    cancelSpeech();
-  }, []);
-
-  const stopAllAudio = () => {
-    audioEngine.stopAll();
-    stopStory();
-    if (!prefs) return;
-    const nextSounds = { ...prefs.sounds };
-    for (const id of Object.keys(nextSounds)) {
-      nextSounds[id] = { ...nextSounds[id], active: false };
-    }
-    updatePrefs({ sounds: nextSounds });
+    updatePrefs({ sounds: { ...prefs.sounds, [id]: { ...current, vol } } });
   };
 
   useEffect(() => {
@@ -299,7 +348,11 @@ export function SleepApp() {
       setParagraph(paragraphRef.current);
       speakText(
         story.paras[paragraphRef.current],
-        { rate: rateRef.current, pitch: pitchRef.current },
+        {
+          rate: rateRef.current,
+          pitch: pitchRef.current,
+          voiceName: voiceNameRef.current,
+        },
         () => {
           if (!readingRef.current) return;
           paragraphRef.current += 1;
@@ -331,6 +384,15 @@ export function SleepApp() {
     }
   };
 
+  const previewVoice = () => {
+    if (!prefs) return;
+    speakText(VOICE_PREVIEW, {
+      rate: prefs.rate,
+      pitch: prefs.pitch,
+      voiceName: prefs.voiceName,
+    });
+  };
+
   const sayCue = (phase: string) => {
     if (!breathVoiceRef.current) return;
     const words: Record<string, string> = {
@@ -338,7 +400,12 @@ export function SleepApp() {
       Hold: "hold gently",
       Exhale: "breathe out slowly",
     };
-    speakText(words[phase] || phase, { rate: 0.48, pitch: 0.78, volume: 0.45 });
+    speakText(words[phase] || phase, {
+      rate: 0.48,
+      pitch: 0.78,
+      volume: 0.45,
+      voiceName: voiceNameRef.current,
+    });
   };
 
   const stopBreath = () => {
@@ -394,7 +461,6 @@ export function SleepApp() {
   const startTimer = (mins: number) => {
     clearSleepTimer();
     const total = mins * 60;
-    setTimerTotal(total);
     setTimerLeft(total);
     updatePrefs({ lastTimerMinutes: mins });
     let left = total;
@@ -404,18 +470,15 @@ export function SleepApp() {
       if (left === 60) audioEngine.fadeTo(0, 56);
       if (left <= 0) {
         clearSleepTimer();
-        audioEngine.stopAll();
-        stopStory();
-        setPrefs((prev) => {
-          if (!prev) return prev;
-          const nextSounds = { ...prev.sounds };
-          for (const id of Object.keys(nextSounds)) {
-            nextSounds[id] = { ...nextSounds[id], active: false };
-          }
-          return { ...prev, sounds: nextSounds };
-        });
+        stopAllAudio();
+        audioEngine.fadeTo(0.82, 0.5);
       }
     }, 1000);
+  };
+
+  const cancelTimer = () => {
+    clearSleepTimer();
+    audioEngine.fadeTo(0.82, 2);
   };
 
   if (!prefs) {
@@ -430,10 +493,6 @@ export function SleepApp() {
   const storyFill =
     selectedStory && paragraph >= 0
       ? ((paragraph + 1) / selectedStory.paras.length) * 100
-      : 0;
-  const timerPct =
-    timerLeft != null && timerTotal > 0
-      ? (1 - timerLeft / timerTotal) * 100
       : 0;
   const timerLabel =
     timerLeft == null
@@ -452,33 +511,31 @@ export function SleepApp() {
       />
 
       <div className="shell">
-        <header className="mb-10 flex items-center justify-between gap-4 border-b border-border pb-5">
-          <div>
-            <p className="font-mono text-[11px] tracking-[0.18em] text-muted uppercase">
-              {APP_NAME}
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Wind-down companion
-            </p>
-          </div>
+        <header className="mb-8 flex items-center justify-between gap-4 pb-2">
+          <p className="font-mono text-[11px] tracking-[0.18em] text-muted uppercase">
+            {APP_NAME}
+          </p>
           <div className="flex items-center gap-4 text-sm">
-            <span className="hidden text-muted sm:inline">{statusText}</span>
-            <Link href="/about" className="text-muted transition-colors hover:text-foreground">
-              About
-            </Link>
-            <a
-              href={SITE_HOME_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+            {streak && streak.current > 0 && (
+              <span
+                className="flex items-center gap-1.5 text-muted"
+                title={`Wind-down streak · best ${streak.best}`}
+              >
+                <IconMoon className="h-4 w-4 text-accent" />
+                {streak.current} night{streak.current === 1 ? "" : "s"}
+              </span>
+            )}
+            <Link
+              href="/about"
               className="text-muted transition-colors hover:text-foreground"
             >
-              weidong-shi.com
-            </a>
+              About
+            </Link>
           </div>
         </header>
 
         {sharedMix && (
-          <div className="panel mb-8 flex flex-wrap items-center justify-between gap-4 border-accent/40 p-5">
+          <div className="panel mb-6 flex flex-wrap items-center justify-between gap-4 border-accent/40 p-5">
             <div>
               <p className="section-label">A sleep mix was shared with you</p>
               <p className="mt-2 text-lg text-foreground">{mixLabel(sharedMix)}</p>
@@ -509,92 +566,113 @@ export function SleepApp() {
           </div>
         )}
 
-        <section className="mb-10 grid gap-6 lg:grid-cols-[1.35fr_0.85fr]">
-          <div className="panel relative overflow-hidden p-8 sm:p-10">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 opacity-80"
-              style={{
-                background:
-                  "radial-gradient(circle at 85% 15%, rgba(217,161,62,0.12), transparent 28%)",
-              }}
-            />
-            <div className="relative max-w-xl">
-              <p className="eyebrow">Local-only · no account</p>
-              <h1 className="display mt-5 text-4xl leading-[1.05] text-foreground sm:text-5xl md:text-6xl">
-                Ease your mind{" "}
-                <em className="text-accent not-italic">into sleep.</em>
+        {/* ——— Player ——— */}
+        <section className="panel mb-8 p-6 sm:p-8">
+          <div className="flex items-center gap-6">
+            <button
+              type="button"
+              onClick={togglePlay}
+              aria-label={playing ? "Stop everything" : "Play last scene"}
+              className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full border transition-all sm:h-24 sm:w-24 ${
+                playing
+                  ? "border-accent/60 bg-accent/15 text-accent"
+                  : "border-border bg-card text-foreground hover:border-accent/50 hover:text-accent"
+              }`}
+            >
+              {playing ? (
+                <IconStop className="h-8 w-8" />
+              ) : (
+                <IconPlay className="h-9 w-9 translate-x-0.5" />
+              )}
+            </button>
+            <div className="min-w-0 flex-1">
+              <p className="section-label">Tonight</p>
+              <h1 className="display mt-1 truncate text-3xl text-foreground sm:text-4xl">
+                {nowTitle}
               </h1>
-              <p className="mt-5 max-w-lg text-base leading-relaxed text-muted sm:text-lg">
-                Layer quiet soundscapes, follow a slow breath, then let a soft
-                device voice read a bedtime story — all on your machine.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => updatePrefs({ tab: "stories" })}
-                >
-                  Start a story
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => updatePrefs({ tab: "sounds" })}
-                >
-                  Mix sounds
-                </button>
-              </div>
+              <p className="mt-1.5 text-sm text-muted">{nowSub}</p>
             </div>
+            {playing && (
+              <button
+                type="button"
+                onClick={shareMix}
+                className="hidden shrink-0 items-center gap-2 border border-border px-3 py-2 text-sm text-muted transition-colors hover:text-foreground sm:flex"
+              >
+                <IconShare className="h-4 w-4" />
+                {shareNote ?? "Share"}
+              </button>
+            )}
           </div>
 
-          <aside className="panel flex flex-col justify-between p-6 sm:p-7">
-            <div>
-              <p className="section-label">Tonight&apos;s session</p>
-              <h2 className="display mt-4 text-3xl text-foreground">{nowTitle}</h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted">{nowSub}</p>
-            </div>
-            <div className="mt-8 flex items-end justify-between gap-4 border-t border-border pt-5">
-              <div className="flex gap-8">
-                <div>
-                  <p className="section-label">Active layers</p>
-                  <p className="mt-2 text-2xl text-foreground">
-                    {activeSounds.length}
-                  </p>
-                </div>
-                <div>
-                  <p className="section-label">Night streak</p>
-                  <p className="mt-2 text-2xl text-foreground">
-                    {streak?.current ?? 0}
-                    {streak && streak.best > 1 && (
-                      <span className="ml-2 text-xs text-muted">
-                        best {streak.best}
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                {activeSounds.length > 0 && (
-                  <button type="button" className="btn btn-secondary" onClick={shareMix}>
-                    {shareNote ?? "Share mix"}
+          {/* Timer row */}
+          <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-border pt-5">
+            <span className="mr-1 text-xs text-muted">Sleep timer</span>
+            {timerLeft == null ? (
+              <>
+                {TIMER_OPTIONS.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    className="border border-border px-3 py-1.5 text-sm text-muted transition-colors hover:border-accent/50 hover:text-foreground"
+                    onClick={() => startTimer(m)}
+                  >
+                    {m}m
                   </button>
-                )}
-                <button type="button" className="btn btn-secondary" onClick={stopAllAudio}>
-                  Stop all
+                ))}
+                <form
+                  className="flex items-center"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const m = parseInt(customMins, 10);
+                    if (Number.isFinite(m) && m >= 1 && m <= 480) {
+                      startTimer(m);
+                      setCustomMins("");
+                    }
+                  }}
+                >
+                  <input
+                    type="number"
+                    min={1}
+                    max={480}
+                    value={customMins}
+                    onChange={(e) => setCustomMins(e.target.value)}
+                    placeholder="…"
+                    aria-label="Custom timer minutes"
+                    className="w-14 border border-border bg-transparent px-2 py-1.5 text-center text-sm text-foreground outline-none [appearance:textfield]"
+                  />
+                  <button
+                    type="submit"
+                    className="border border-l-0 border-border px-2.5 py-1.5 text-sm text-muted hover:text-foreground"
+                  >
+                    Set
+                  </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <span className="font-mono text-lg text-foreground">{timerLabel}</span>
+                <span className="text-xs text-muted">
+                  {timerLeft <= 60 ? "fading to silence…" : "until fade-out"}
+                </span>
+                <button
+                  type="button"
+                  className="ml-2 border border-border px-3 py-1.5 text-sm text-muted hover:text-foreground"
+                  onClick={cancelTimer}
+                >
+                  Cancel
                 </button>
-              </div>
-            </div>
-          </aside>
+              </>
+            )}
+          </div>
         </section>
 
+        {/* ——— Nav ——— */}
         <nav className="tab-bar mb-8" aria-label="App sections">
           {(
             [
-              ["sounds", "Sounds"],
+              ["sleep", "Sleep"],
               ["stories", "Stories"],
               ["breathe", "Breathe"],
-              ["timer", "Timer"],
             ] as Array<[TabId, string]>
           ).map(([id, label]) => (
             <button
@@ -608,211 +686,249 @@ export function SleepApp() {
           ))}
         </nav>
 
-        {tab === "sounds" && (
+        {/* ——— Sleep: scenes + mixer ——— */}
+        {tab === "sleep" && (
           <section>
-            <div className="mb-6 max-w-2xl">
-              <h2 className="display text-3xl text-foreground">Soundscapes</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                Generated in your browser with the Web Audio API — nothing is
-                streamed from a server.
-              </p>
-            </div>
-            <div className="mb-8">
-              <p className="section-label mb-3">One-tap scenes</p>
-              <div className="flex flex-wrap gap-2">
-                {PRESETS.map((p) => (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {PRESETS.map((p) => {
+                const Icon = soundIcon(p.icon);
+                const isActive = activePreset === p.id;
+                return (
                   <button
                     key={p.id}
                     type="button"
-                    className="border border-border px-3 py-2 text-left text-sm text-muted transition-colors hover:border-accent/50 hover:text-foreground"
-                    onClick={() => applyMix(p.mix)}
-                    title={p.desc}
+                    className={`sound-card text-left transition-colors ${
+                      isActive ? "active" : ""
+                    }`}
+                    onClick={() => (isActive ? stopAllAudio() : applyMix(p.mix, p.id))}
                   >
-                    {p.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {SOUNDS.map((s) => {
-                const st = prefs.sounds[s.id];
-                const active = Boolean(st?.active);
-                const Icon = soundIcon(s.id);
-                return (
-                  <div key={s.id} className={`sound-card ${active ? "active" : ""}`}>
-                    <button
-                      type="button"
-                      className="flex w-full items-start justify-between gap-3 text-left"
-                      onClick={() => toggleSound(s.id)}
-                    >
+                    <span className="flex items-start justify-between gap-3">
                       <span className="flex h-10 w-10 items-center justify-center border border-border text-muted">
                         <Icon className="h-5 w-5" />
                       </span>
                       <span
                         className={`mt-1 h-2 w-2 rounded-full ${
-                          active ? "bg-accent" : "bg-border"
+                          isActive ? "bg-accent" : "bg-border"
                         }`}
                       />
-                    </button>
-                    <button
-                      type="button"
-                      className="text-left"
-                      onClick={() => toggleSound(s.id)}
+                    </span>
+                    <span className="mt-3 block text-base font-medium text-foreground">
+                      {p.name}
+                    </span>
+                    <span className="mt-1 block text-sm text-muted">{p.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              className="mt-8 flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground"
+              onClick={() => setShowMixer((v) => !v)}
+              aria-expanded={showMixer}
+            >
+              <span
+                className={`inline-block transition-transform ${showMixer ? "rotate-90" : ""}`}
+              >
+                ›
+              </span>
+              Fine-tune your own mix
+            </button>
+
+            {showMixer && (
+              <div className="mt-4 flex flex-col gap-2">
+                {SOUNDS.map((s) => {
+                  const st = prefs.sounds[s.id];
+                  const active = Boolean(st?.active);
+                  const Icon = soundIcon(s.id);
+                  return (
+                    <div
+                      key={s.id}
+                      className={`flex items-center gap-4 border px-4 py-3 transition-colors ${
+                        active ? "border-accent/40 bg-accent/5" : "border-border"
+                      }`}
                     >
-                      <div className="text-base font-medium text-foreground">
-                        {s.label}
-                      </div>
-                      <div className="mt-1 text-sm text-muted">{s.desc}</div>
-                    </button>
-                    {active && (
-                      <div onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                        onClick={() => toggleSound(s.id)}
+                      >
+                        <span
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center border ${
+                            active
+                              ? "border-accent/50 text-accent"
+                              : "border-border text-muted"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-medium text-foreground">
+                            {s.label}
+                          </span>
+                          <span className="block truncate text-xs text-muted">
+                            {s.desc}
+                          </span>
+                        </span>
+                      </button>
+                      {active && (
                         <input
                           type="range"
                           min={0}
                           max={0.8}
                           step={0.01}
                           value={st?.vol ?? s.vol}
-                          onChange={(e) =>
-                            setSoundVol(s.id, parseFloat(e.target.value))
-                          }
+                          onChange={(e) => setSoundVol(s.id, parseFloat(e.target.value))}
                           aria-label={`${s.label} volume`}
+                          className="w-28 sm:w-40"
                         />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
         )}
 
+        {/* ——— Stories ——— */}
         {tab === "stories" && selectedStory && (
-          <section>
-            <div className="mb-6 max-w-2xl">
-              <h2 className="display text-3xl text-foreground">Sleep stories</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                Written scenes narrated by your device&apos;s built-in voice — not
-                a cloud AI service.
-              </p>
+          <section className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+            <div className="flex flex-col gap-2">
+              {STORIES.map((s, i) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  className={`story-row ${selectedStory.id === s.id ? "selected" : ""}`}
+                  onClick={() => {
+                    stopStory();
+                    updatePrefs({ storyId: s.id });
+                  }}
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-border font-mono text-xs text-muted">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span>
+                    <span className="block text-sm font-medium text-foreground">
+                      {s.title}
+                    </span>
+                    <span className="mt-1 block text-xs text-muted">{s.meta}</span>
+                  </span>
+                </button>
+              ))}
             </div>
-            <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-              <div className="flex flex-col gap-2">
-                {STORIES.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    className={`story-row ${selectedStory.id === s.id ? "selected" : ""}`}
-                    onClick={() => {
-                      stopStory();
-                      updatePrefs({ storyId: s.id });
-                    }}
-                  >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-border font-mono text-xs text-muted">
-                      {String(STORIES.findIndex((x) => x.id === s.id) + 1).padStart(2, "0")}
-                    </span>
-                    <span>
-                      <span className="block text-sm font-medium text-foreground">
-                        {s.title}
-                      </span>
-                      <span className="mt-1 block text-xs text-muted">{s.meta}</span>
-                    </span>
-                  </button>
-                ))}
+
+            <article className="panel flex flex-col gap-5 p-6 sm:p-7">
+              <div className="flex flex-wrap items-center gap-2">
+                <button type="button" className="btn btn-primary" onClick={startStory}>
+                  {reading ? "Restart" : "Read to me"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={togglePauseStory}
+                  disabled={!reading}
+                >
+                  {paused ? "Resume" : "Pause"}
+                </button>
+                <button type="button" className="btn btn-ghost" onClick={stopStory}>
+                  Stop
+                </button>
               </div>
 
-              <article className="panel flex min-h-[440px] flex-col gap-5 p-6 sm:p-7">
-                <div>
-                  <p className="section-label">Now reading</p>
-                  <h3 className="display mt-3 text-3xl text-foreground">
-                    {selectedStory.title}
-                  </h3>
-                  <p className="mt-2 text-sm text-muted">{selectedStory.meta}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" className="btn btn-primary" onClick={startStory}>
-                    Read to me
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={togglePauseStory}
-                    disabled={!reading}
-                  >
-                    {paused ? "Resume" : "Pause"}
-                  </button>
-                  <button type="button" className="btn btn-ghost" onClick={stopStory}>
-                    Stop
-                  </button>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="border border-border bg-background/40 p-3">
-                    <span className="mb-2 flex justify-between text-xs text-muted">
-                      <span>Narration speed</span>
-                      <span>
-                        {prefs.rate < 0.66
-                          ? "Very slow"
-                          : prefs.rate < 0.78
-                            ? "Slow"
-                            : "Relaxed"}
-                      </span>
-                    </span>
-                    <input
-                      type="range"
-                      min={0.55}
-                      max={0.9}
-                      step={0.01}
-                      value={prefs.rate}
-                      onChange={(e) =>
-                        updatePrefs({ rate: parseFloat(e.target.value) })
-                      }
-                    />
-                  </label>
-                  <label className="border border-border bg-background/40 p-3">
-                    <span className="mb-2 flex justify-between text-xs text-muted">
-                      <span>Voice warmth</span>
-                      <span>
-                        {prefs.pitch < 0.82
-                          ? "Warm"
-                          : prefs.pitch < 0.94
-                            ? "Gentle"
-                            : "Bright"}
-                      </span>
-                    </span>
-                    <input
-                      type="range"
-                      min={0.72}
-                      max={1.02}
-                      step={0.01}
-                      value={prefs.pitch}
-                      onChange={(e) =>
-                        updatePrefs({ pitch: parseFloat(e.target.value) })
-                      }
-                    />
-                  </label>
-                </div>
-                <div className="h-px bg-border">
-                  <div
-                    className="h-px bg-accent transition-[width] duration-500"
-                    style={{ width: `${storyFill}%` }}
-                  />
-                </div>
-                <div className="max-h-[280px] overflow-auto border border-border bg-background/50 p-5 text-[0.95rem] leading-[1.9] text-muted">
-                  {selectedStory.paras.map((p, i) => (
-                    <p
-                      key={i}
-                      className={`mb-4 last:mb-0 ${
-                        i === paragraph ? "text-foreground" : ""
-                      }`}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="border border-border bg-background/40 p-3 sm:col-span-2">
+                  <span className="mb-2 flex items-center justify-between text-xs text-muted">
+                    <span>Voice</span>
+                    <button
+                      type="button"
+                      className="text-accent hover:underline"
+                      onClick={previewVoice}
                     >
-                      {p}
-                    </p>
-                  ))}
-                </div>
-              </article>
-            </div>
+                      Preview
+                    </button>
+                  </span>
+                  <select
+                    value={prefs.voiceName ?? ""}
+                    onChange={(e) =>
+                      updatePrefs({ voiceName: e.target.value || null })
+                    }
+                    className="w-full border border-border bg-card px-2 py-2 text-sm text-foreground outline-none"
+                  >
+                    <option value="">Auto — best available on this device</option>
+                    {voices.map((v) => (
+                      <option key={v.name} value={v.name}>
+                        {v.name}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="mt-2 block text-xs text-muted">
+                    Tip: many devices hide their most natural voices — try a few.
+                  </span>
+                </label>
+                <label className="border border-border bg-background/40 p-3">
+                  <span className="mb-2 flex justify-between text-xs text-muted">
+                    <span>Speed</span>
+                    <span>
+                      {prefs.rate < 0.66
+                        ? "Very slow"
+                        : prefs.rate < 0.78
+                          ? "Slow"
+                          : "Relaxed"}
+                    </span>
+                  </span>
+                  <input
+                    type="range"
+                    min={0.55}
+                    max={0.9}
+                    step={0.01}
+                    value={prefs.rate}
+                    onChange={(e) => updatePrefs({ rate: parseFloat(e.target.value) })}
+                  />
+                </label>
+                <label className="border border-border bg-background/40 p-3">
+                  <span className="mb-2 flex justify-between text-xs text-muted">
+                    <span>Warmth</span>
+                    <span>
+                      {prefs.pitch < 0.82
+                        ? "Warm"
+                        : prefs.pitch < 0.94
+                          ? "Gentle"
+                          : "Bright"}
+                    </span>
+                  </span>
+                  <input
+                    type="range"
+                    min={0.72}
+                    max={1.02}
+                    step={0.01}
+                    value={prefs.pitch}
+                    onChange={(e) => updatePrefs({ pitch: parseFloat(e.target.value) })}
+                  />
+                </label>
+              </div>
+
+              <div className="h-px bg-border">
+                <div
+                  className="h-px bg-accent transition-[width] duration-500"
+                  style={{ width: `${storyFill}%` }}
+                />
+              </div>
+              <div className="max-h-[300px] overflow-auto border border-border bg-background/50 p-5 text-[0.95rem] leading-[1.9] text-muted">
+                {selectedStory.paras.map((p, i) => (
+                  <p
+                    key={i}
+                    className={`mb-4 last:mb-0 ${i === paragraph ? "text-foreground" : ""}`}
+                  >
+                    {p}
+                  </p>
+                ))}
+              </div>
+            </article>
           </section>
         )}
 
+        {/* ——— Breathe ——— */}
         {tab === "breathe" && (
           <section className="panel grid items-center gap-8 p-6 sm:p-8 lg:grid-cols-[1.2fr_0.8fr]">
             <div>
@@ -820,10 +936,6 @@ export function SleepApp() {
               <h2 className="display mt-3 text-4xl text-foreground">
                 Slow the body first.
               </h2>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
-                Optional spoken cues use your device voice. Switch to silent
-                visuals anytime.
-              </p>
               <div className="mt-6 flex flex-wrap gap-2">
                 {(Object.keys(BREATH_MODES) as BreathModeId[]).map((id) => (
                   <button
@@ -866,91 +978,10 @@ export function SleepApp() {
           </section>
         )}
 
-        {tab === "timer" && (
-          <section>
-            <div className="mb-6 max-w-2xl">
-              <h2 className="display text-3xl text-foreground">Sleep timer</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                Everything fades gently in the final minute, then silence.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {TIMER_OPTIONS.map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  className="border border-border bg-card px-4 py-8 text-center transition-colors hover:border-foreground/30"
-                  onClick={() => startTimer(m)}
-                >
-                  <span className="display block text-4xl text-foreground">{m}</span>
-                  <span className="mt-2 block text-xs text-muted">minutes</span>
-                </button>
-              ))}
-            </div>
-            <form
-              className="mt-3 flex flex-wrap items-center gap-3"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const m = parseInt(customMins, 10);
-                if (Number.isFinite(m) && m >= 1 && m <= 480) {
-                  startTimer(m);
-                  setCustomMins("");
-                }
-              }}
-            >
-              <label className="flex items-center gap-3 border border-border bg-card px-4 py-3">
-                <span className="text-xs text-muted">Custom</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={480}
-                  value={customMins}
-                  onChange={(e) => setCustomMins(e.target.value)}
-                  placeholder={String(prefs.lastTimerMinutes)}
-                  className="w-20 bg-transparent text-lg text-foreground outline-none [appearance:textfield]"
-                  aria-label="Custom timer minutes"
-                />
-                <span className="text-xs text-muted">min</span>
-              </label>
-              <button type="submit" className="btn btn-secondary">
-                Start
-              </button>
-            </form>
-            {timerLeft != null && (
-              <div className="panel mt-4 flex flex-wrap items-center justify-between gap-4 p-5">
-                <div>
-                  <p className="section-label">
-                    {timerLeft <= 60 ? "Fading to silence" : "Timer running"}
-                  </p>
-                  <p className="display mt-2 text-4xl text-foreground">{timerLabel}</p>
-                  <div className="mt-4 h-px w-48 bg-border">
-                    <div
-                      className="h-px bg-accent"
-                      style={{ width: `${timerPct}%` }}
-                    />
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    clearSleepTimer();
-                    audioEngine.fadeTo(0.78, 2);
-                  }}
-                >
-                  Cancel timer
-                </button>
-              </div>
-            )}
-          </section>
-        )}
-
         <footer className="mt-14 border-t border-border pt-6 text-sm text-muted">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p>Preferences stay on this device. Not medical advice.</p>
-            <p className="font-mono text-xs tracking-wide uppercase">
-              {APP_NAME}
-            </p>
+            <p>Everything stays on this device. Not medical advice.</p>
+            <p className="font-mono text-xs tracking-wide uppercase">{APP_NAME}</p>
           </div>
         </footer>
       </div>

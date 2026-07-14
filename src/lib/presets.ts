@@ -4,6 +4,7 @@ export type Preset = {
   id: string;
   name: string;
   desc: string;
+  icon: string;
   mix: Record<string, number>; // soundId -> volume
 };
 
@@ -12,31 +13,43 @@ export const PRESETS: Preset[] = [
     id: "rainy-cabin",
     name: "Rainy Cabin",
     desc: "Rain on the roof, fire in the hearth",
-    mix: { rain: 0.4, fire: 0.34 },
+    icon: "Rain",
+    mix: { rain: 0.5, fire: 0.42 },
   },
   {
     id: "moonlit-shore",
     name: "Moonlit Shore",
     desc: "Slow waves and a soft night wind",
-    mix: { ocean: 0.44, wind: 0.22 },
+    icon: "Ocean",
+    mix: { ocean: 0.55, wind: 0.26 },
   },
   {
     id: "summer-meadow",
     name: "Summer Meadow",
     desc: "Crickets, breeze, and a far-off creek",
-    mix: { crickets: 0.26, wind: 0.2, stream: 0.18 },
+    icon: "Cricket",
+    mix: { crickets: 0.38, wind: 0.22, stream: 0.2 },
+  },
+  {
+    id: "creekside",
+    name: "Creekside",
+    desc: "Water over stones under night wind",
+    icon: "Stream",
+    mix: { stream: 0.5, wind: 0.2 },
   },
   {
     id: "deep-hush",
     name: "Deep Hush",
     desc: "Brown noise with a theta drift",
+    icon: "Brown",
     mix: { brown: 0.34, theta: 0.14 },
   },
   {
     id: "storm-shelter",
     name: "Storm Shelter",
     desc: "Heavy rain, wind, and warm cover",
-    mix: { rain: 0.48, wind: 0.3, brown: 0.18 },
+    icon: "Wind",
+    mix: { rain: 0.58, wind: 0.34, brown: 0.16 },
   },
 ];
 

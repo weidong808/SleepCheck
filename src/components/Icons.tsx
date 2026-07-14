@@ -76,13 +76,61 @@ export function IconStream({ className }: IconProps) {
   );
 }
 
+export function IconPlay({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
+      <path d="M8.5 5.6v12.8c0 .9 1 1.5 1.8 1l10-6.4c.7-.5.7-1.5 0-2l-10-6.4c-.8-.5-1.8.1-1.8 1Z" />
+    </svg>
+  );
+}
+
+export function IconStop({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
+      <rect x="6.5" y="6.5" width="11" height="11" rx="1.5" />
+    </svg>
+  );
+}
+
+export function IconMoon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+      <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconShare({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="17" cy="6" r="2.5" />
+      <circle cx="17" cy="18" r="2.5" />
+      <path d="m8.2 10.8 6.6-3.6M8.2 13.2l6.6 3.6" />
+    </svg>
+  );
+}
+
+const MAP: Record<string, (p: IconProps) => React.ReactElement> = {
+  rain: IconRain,
+  ocean: IconOcean,
+  theta: IconTone,
+  fire: IconFire,
+  wind: IconWind,
+  crickets: IconCricket,
+  stream: IconStream,
+  Rain: IconRain,
+  Ocean: IconOcean,
+  Tone: IconTone,
+  Fire: IconFire,
+  Wind: IconWind,
+  Cricket: IconCricket,
+  Stream: IconStream,
+  Brown: IconNoise,
+  Pink: IconNoise,
+  White: IconNoise,
+};
+
 export function soundIcon(id: string) {
-  if (id === "rain") return IconRain;
-  if (id === "ocean") return IconOcean;
-  if (id === "theta") return IconTone;
-  if (id === "fire") return IconFire;
-  if (id === "wind") return IconWind;
-  if (id === "crickets") return IconCricket;
-  if (id === "stream") return IconStream;
-  return IconNoise;
+  return MAP[id] ?? IconNoise;
 }

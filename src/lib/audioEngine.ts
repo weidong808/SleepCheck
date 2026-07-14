@@ -1,4 +1,4 @@
-type SoundType =
+export type SynthType =
   | "rain"
   | "ocean"
   | "brown"
@@ -13,12 +13,20 @@ type SoundType =
 type ActiveNode = {
   out: GainNode;
   stops: Array<AudioScheduledSourceNode>;
+  loopTimer?: number;
 };
+
+/** Crossfade duration between loop passes of sampled ambience (seconds). */
+const LOOP_FADE = 1.0;
+/** Trim decoded MP3 edges to skip encoder padding (seconds). */
+const LOOP_TRIM = 0.06;
 
 export class AudioEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private nodes: Record<string, ActiveNode> = {};
+  private buffers: Record<string, AudioBuffer> = {};
+  private loading: Record<string, Promise<AudioBuffer | null>> = {};
 
   boot() {
     if (this.ctx) {
@@ -31,12 +39,12 @@ export class AudioEngine {
         .webkitAudioContext;
     this.ctx = new Ctx();
     this.master = this.ctx.createGain();
-    this.master.gain.value = 0.78;
+    this.master.gain.value = 0.82;
 
     const shelf = this.ctx.createBiquadFilter();
     shelf.type = "highshelf";
     shelf.frequency.value = 4200;
-    shelf.gain.value = -8;
+    shelf.gain.value = -6;
 
     const comp = this.ctx.createDynamicsCompressor();
     comp.threshold.value = -20;
@@ -48,6 +56,82 @@ export class AudioEngine {
     this.master.connect(shelf);
     shelf.connect(comp);
     comp.connect(this.ctx.destination);
+  }
+
+  /** Fetch + decode a sampled loop once; cached for the session. */
+  private loadBuffer(src: string): Promise<AudioBuffer | null> {
+    if (this.buffers[src]) return Promise.resolve(this.buffers[src]);
+    if (!(src in this.loading)) {
+      this.loading[src] = fetch(src)
+        .then((r) => {
+          if (!r.ok) throw new Error(String(r.status));
+          return r.arrayBuffer();
+        })
+        .then((ab) => this.ctx!.decodeAudioData(ab))
+        .then((buf) => {
+          this.buffers[src] = buf;
+          return buf;
+        })
+        .catch(() => null);
+    }
+    return this.loading[src];
+  }
+
+  /** Warm the cache so play starts instantly later. */
+  preload(srcs: string[]) {
+    this.boot();
+    for (const s of srcs) void this.loadBuffer(s);
+  }
+
+  /**
+   * Gapless playback: schedule overlapping buffer passes with an
+   * equal-power crossfade, immune to MP3 encoder padding.
+   */
+  private playSampleLoop(id: string, buffer: AudioBuffer, out: GainNode) {
+    const ctx = this.ctx!;
+    const dur = buffer.duration - 2 * LOOP_TRIM;
+    const period = dur - LOOP_FADE;
+    let nextStart = ctx.currentTime + 0.03;
+
+    const scheduleOne = (when: number) => {
+      const node = this.nodes[id];
+      if (!node) return;
+      const s = ctx.createBufferSource();
+      s.buffer = buffer;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, when);
+      g.gain.linearRampToValueAtTime(1, when + LOOP_FADE);
+      g.gain.setValueAtTime(1, when + dur - LOOP_FADE);
+      g.gain.linearRampToValueAtTime(0, when + dur);
+      s.connect(g);
+      g.connect(out);
+      s.start(when, LOOP_TRIM, dur);
+      s.onended = () => {
+        try {
+          g.disconnect();
+        } catch {
+          /* noop */
+        }
+        const n = this.nodes[id];
+        if (n) n.stops = n.stops.filter((x) => x !== s);
+      };
+      node.stops.push(s);
+    };
+
+    scheduleOne(nextStart);
+    nextStart += period;
+    scheduleOne(nextStart);
+
+    const node = this.nodes[id];
+    if (!node) return;
+    node.loopTimer = window.setInterval(() => {
+      if (!this.ctx || !this.nodes[id]) return;
+      // Keep two passes scheduled ahead.
+      while (nextStart - this.ctx.currentTime < period) {
+        nextStart += period;
+        scheduleOne(nextStart);
+      }
+    }, 1000);
   }
 
   private gain(v: number) {
@@ -112,64 +196,41 @@ export class AudioEngine {
     return s;
   }
 
-  /** Sparse exponentially-decaying noise bursts — fire crackle bed. */
-  private crackleBuffer() {
-    const sr = this.ctx!.sampleRate;
-    const n = 10 * sr;
-    const b = this.ctx!.createBuffer(1, n, sr);
-    const d = b.getChannelData(0);
-    const pops = 46;
-    for (let p = 0; p < pops; p++) {
-      const at = Math.floor(Math.random() * (n - sr * 0.06));
-      const len = Math.floor(sr * (0.006 + Math.random() * 0.045));
-      const amp = 0.12 + Math.random() * 0.5;
-      for (let i = 0; i < len; i++) {
-        const env = Math.exp((-5 * i) / len);
-        d[at + i] += (Math.random() * 2 - 1) * amp * env;
-      }
-    }
-    return b;
-  }
-
-  /** Amplitude-pulsed high sine chirps — distant summer crickets. */
-  private cricketBuffer() {
-    const sr = this.ctx!.sampleRate;
-    const n = 12 * sr;
-    const b = this.ctx!.createBuffer(1, n, sr);
-    const d = b.getChannelData(0);
-    let t = 0.4 * sr;
-    while (t < n - sr) {
-      const chirps = 3 + Math.floor(Math.random() * 3);
-      const freq = 4100 + Math.random() * 500;
-      for (let c = 0; c < chirps; c++) {
-        const len = Math.floor(sr * 0.055);
-        for (let i = 0; i < len && t + i < n; i++) {
-          const env = Math.sin((Math.PI * i) / len);
-          d[Math.floor(t) + i] +=
-            Math.sin((2 * Math.PI * freq * i) / sr) * env * 0.32;
-        }
-        t += sr * 0.085;
-      }
-      t += sr * (0.5 + Math.random() * 1.4);
-    }
-    return b;
-  }
-
-  private customSrc(make: () => AudioBuffer) {
-    const s = this.ctx!.createBufferSource();
-    s.buffer = make();
-    s.loop = true;
-    return s;
-  }
-
-  start(id: string, type: SoundType, vol: number) {
+  /**
+   * Start a sound. If `sampleSrc` is given, plays the rendered loop
+   * (falling back to live synthesis when it can't be fetched).
+   */
+  start(id: string, type: SynthType, vol: number, sampleSrc?: string) {
     this.boot();
     this.stop(id, true);
     const out = this.gain(0);
     out.connect(this.master!);
-    const stops: Array<AudioScheduledSourceNode> = [];
+    this.nodes[id] = { out, stops: [] };
+
+    if (sampleSrc) {
+      void this.loadBuffer(sampleSrc).then((buf) => {
+        const node = this.nodes[id];
+        if (!node || node.out !== out) return; // stopped meanwhile
+        if (buf) {
+          this.playSampleLoop(id, buf, out);
+          out.gain.linearRampToValueAtTime(vol, this.ctx!.currentTime + 1.2);
+        } else {
+          this.startSynth(id, type, out);
+          out.gain.linearRampToValueAtTime(vol, this.ctx!.currentTime + 1.2);
+        }
+      });
+      return;
+    }
+
+    this.startSynth(id, type, out);
+    out.gain.linearRampToValueAtTime(vol, this.ctx!.currentTime + 1.4);
+  }
+
+  private startSynth(id: string, type: SynthType, out: GainNode) {
+    const node = this.nodes[id];
+    if (!node) return;
     const add = (s: AudioScheduledSourceNode) => {
-      stops.push(s);
+      node.stops.push(s);
       s.start();
     };
 
@@ -201,14 +262,8 @@ export class AudioEngine {
       add(l);
     } else if (type === "fire") {
       const bed = this.src("brown");
-      const crackle = this.customSrc(() => this.crackleBuffer());
-      bed.connect(this.filter("lowpass", 320)).connect(this.gain(0.5)).connect(out);
-      crackle
-        .connect(this.filter("bandpass", 2400, 0.7))
-        .connect(this.gain(0.5))
-        .connect(out);
+      bed.connect(this.filter("lowpass", 320)).connect(this.gain(0.6)).connect(out);
       add(bed);
-      add(crackle);
     } else if (type === "wind") {
       const a = this.src("pink");
       const bp = this.filter("bandpass", 380, 0.45);
@@ -217,40 +272,17 @@ export class AudioEngine {
       wob.frequency.value = 0.07;
       wob.connect(wobAmt);
       wobAmt.connect(bp.frequency);
-      const swellGain = this.gain(0.62);
-      const swell = this.ctx!.createOscillator();
-      const swellAmt = this.gain(0.2);
-      swell.frequency.value = 0.05;
-      swell.connect(swellAmt);
-      swellAmt.connect(swellGain.gain);
-      a.connect(bp).connect(swellGain).connect(out);
+      a.connect(bp).connect(this.gain(0.62)).connect(out);
       add(a);
       add(wob);
-      add(swell);
-    } else if (type === "crickets") {
-      const chirps = this.customSrc(() => this.cricketBuffer());
-      const bed = this.src("pink");
-      chirps
-        .connect(this.filter("highpass", 2800, 0.6))
-        .connect(this.gain(0.7))
+    } else if (type === "crickets" || type === "stream") {
+      const a = this.src(type === "stream" ? "white" : "pink");
+      a.connect(
+        this.filter("bandpass", type === "stream" ? 1500 : 4300, 0.6),
+      )
+        .connect(this.gain(0.4))
         .connect(out);
-      bed.connect(this.filter("lowpass", 480)).connect(this.gain(0.14)).connect(out);
-      add(chirps);
-      add(bed);
-    } else if (type === "stream") {
-      const a = this.src("white");
-      const b = this.src("brown");
-      const ripple = this.filter("bandpass", 1500, 0.55);
-      const lfo = this.ctx!.createOscillator();
-      const lfoAmt = this.gain(240);
-      lfo.frequency.value = 0.21;
-      lfo.connect(lfoAmt);
-      lfoAmt.connect(ripple.frequency);
-      a.connect(ripple).connect(this.gain(0.3)).connect(out);
-      b.connect(this.filter("lowpass", 420)).connect(this.gain(0.34)).connect(out);
       add(a);
-      add(b);
-      add(lfo);
     } else if (type === "binaural") {
       const m = this.ctx!.createChannelMerger(2);
       const lo = this.ctx!.createOscillator();
@@ -270,9 +302,6 @@ export class AudioEngine {
       );
       add(s);
     }
-
-    this.nodes[id] = { out, stops };
-    out.gain.linearRampToValueAtTime(vol, this.ctx!.currentTime + 1.4);
   }
 
   setVol(id: string, vol: number) {
@@ -287,18 +316,8 @@ export class AudioEngine {
     if (!this.nodes[id] || !this.ctx) return;
     const n = this.nodes[id];
     delete this.nodes[id];
-    if (hard) {
-      n.stops.forEach((s) => {
-        try {
-          s.stop();
-        } catch {
-          /* already stopped */
-        }
-      });
-      return;
-    }
-    n.out.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.2);
-    window.setTimeout(() => {
+    if (n.loopTimer) window.clearInterval(n.loopTimer);
+    const kill = () => {
       n.stops.forEach((s) => {
         try {
           s.stop();
@@ -311,7 +330,13 @@ export class AudioEngine {
       } catch {
         /* noop */
       }
-    }, 1300);
+    };
+    if (hard) {
+      kill();
+      return;
+    }
+    n.out.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.2);
+    window.setTimeout(kill, 1300);
   }
 
   stopAll() {
@@ -333,6 +358,10 @@ export class AudioEngine {
 
   get running() {
     return this.ctx?.state === "running" && Object.keys(this.nodes).length > 0;
+  }
+
+  get anyActive() {
+    return Object.keys(this.nodes).length > 0;
   }
 }
 

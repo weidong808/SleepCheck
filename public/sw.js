@@ -1,5 +1,5 @@
-// SleepCheck service worker — offline app shell.
-const CACHE = "sleepcheck-v1";
+// SleepCheck service worker — offline app shell + ambience loops.
+const CACHE = "sleepcheck-v2";
 const SHELL = ["/", "/about", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -19,7 +19,8 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Network-first for navigations (fresh app), cache-first for static assets.
+// Network-first for navigations (fresh app); cache-first for static assets
+// including the rendered ambience loops so sounds work offline.
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
@@ -44,7 +45,11 @@ self.addEventListener("fetch", (event) => {
       (cached) =>
         cached ||
         fetch(req).then((res) => {
-          if (res.ok && (url.pathname.startsWith("/_next/") || url.pathname.match(/\.(png|svg|woff2?)$/))) {
+          if (
+            res.ok &&
+            (url.pathname.startsWith("/_next/") ||
+              url.pathname.match(/\.(png|svg|woff2?|mp3)$/))
+          ) {
             const copy = res.clone();
             caches.open(CACHE).then((c) => c.put(req, copy));
           }

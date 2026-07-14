@@ -1,18 +1,12 @@
+import type { SynthType } from "@/lib/audioEngine";
+
 export type SoundDef = {
   id: string;
   label: string;
   desc: string;
-  type:
-    | "rain"
-    | "ocean"
-    | "brown"
-    | "pink"
-    | "white"
-    | "binaural"
-    | "fire"
-    | "wind"
-    | "crickets"
-    | "stream";
+  type: SynthType;
+  /** Rendered high-quality loop; falls back to live synthesis if missing. */
+  src?: string;
   vol: number;
   icon: string;
 };
@@ -21,17 +15,19 @@ export const SOUNDS: SoundDef[] = [
   {
     id: "rain",
     label: "Soft Rain",
-    desc: "Layered rainfall on leaves",
+    desc: "Rainfall on leaves, distant wash",
     type: "rain",
-    vol: 0.42,
+    src: "/audio/rain.mp3",
+    vol: 0.5,
     icon: "Rain",
   },
   {
     id: "ocean",
     label: "Low Tide",
-    desc: "Slow shoreline waves",
+    desc: "Slow waves arriving and receding",
     type: "ocean",
-    vol: 0.45,
+    src: "/audio/ocean.mp3",
+    vol: 0.55,
     icon: "Ocean",
   },
   {
@@ -39,7 +35,8 @@ export const SOUNDS: SoundDef[] = [
     label: "Fireplace",
     desc: "Low embers and soft crackle",
     type: "fire",
-    vol: 0.38,
+    src: "/audio/fire.mp3",
+    vol: 0.5,
     icon: "Fire",
   },
   {
@@ -47,7 +44,8 @@ export const SOUNDS: SoundDef[] = [
     label: "Night Wind",
     desc: "Slow gusts through trees",
     type: "wind",
-    vol: 0.34,
+    src: "/audio/wind.mp3",
+    vol: 0.45,
     icon: "Wind",
   },
   {
@@ -55,7 +53,8 @@ export const SOUNDS: SoundDef[] = [
     label: "Creek",
     desc: "Water over smooth stones",
     type: "stream",
-    vol: 0.34,
+    src: "/audio/stream.mp3",
+    vol: 0.45,
     icon: "Stream",
   },
   {
@@ -63,7 +62,8 @@ export const SOUNDS: SoundDef[] = [
     label: "Summer Night",
     desc: "Distant crickets in a meadow",
     type: "crickets",
-    vol: 0.26,
+    src: "/audio/crickets.mp3",
+    vol: 0.4,
     icon: "Cricket",
   },
   {
@@ -100,4 +100,4 @@ export const SOUNDS: SoundDef[] = [
   },
 ];
 
-// SOUNDS above are synthesized locally in audioEngine.ts.
+export const SAMPLE_SRCS = SOUNDS.filter((s) => s.src).map((s) => s.src!);
