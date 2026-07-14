@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1220"/>
+      <stop offset="100%" stop-color="#070b14"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#121a2b"/>
+      <stop offset="100%" stop-color="#0e1524"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <text x="80" y="78" fill="#f3f5f8" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700">Engineer and AI Assistant responsibilities</text>
+  <text x="80" y="118" fill="#9aa7bd" font-family="Segoe UI, Arial, sans-serif" font-size="20">AI changes where engineers spend time - accountability stays with the engineer</text>
+
+  <!-- Engineer column -->
+  <rect x="80" y="170" width="620" height="560" rx="22" fill="url(#card)" stroke="#3ecf8e" stroke-width="2.5"/>
+  <text x="120" y="230" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">Engineer</text>
+  <text x="120" y="268" fill="#8fa0ba" font-family="Segoe UI, Arial, sans-serif" font-size="16">Owns judgment and outcomes</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif" fill="#e8eef8" font-size="20">
+    <rect x="120" y="300" width="540" height="48" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="145" y="331">Product direction</text>
+    <rect x="120" y="364" width="540" height="48" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="145" y="395">Architecture and boundaries</text>
+    <rect x="120" y="428" width="540" height="48" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="145" y="459">Trade-offs and security</text>
+    <rect x="120" y="492" width="540" height="48" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="145" y="523">Validation and review</text>
+    <rect x="120" y="556" width="540" height="48" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="145" y="587">Accountability</text>
+    <rect x="120" y="620" width="540" height="48" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="145" y="651">Sensory QA (listen to the build)</text>
+  </g>
+
+  <!-- Arrow -->
+  <line x1="730" y1="450" x2="860" y2="450" stroke="#3ecf8e" stroke-width="4"/>
+  <polygon points="860,450 842,440 842,460" fill="#3ecf8e"/>
+  <text x="795" y="430" text-anchor="middle" fill="#3ecf8e" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">directs</text>
+  <text x="795" y="480" text-anchor="middle" fill="#8fa0ba" font-family="Segoe UI, Arial, sans-serif" font-size="14">reviews</text>
+
+  <!-- AI Assistant column -->
+  <rect x="880" y="170" width="640" height="560" rx="22" fill="url(#card)" stroke="#3d6fd8" stroke-width="2.5"/>
+  <text x="920" y="230" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">AI Assistant</text>
+  <text x="920" y="268" fill="#8fa0ba" font-family="Segoe UI, Arial, sans-serif" font-size="16">Accelerates inside constraints</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif" fill="#e8eef8" font-size="20">
+    <rect x="920" y="300" width="560" height="48" rx="10" fill="#182234" stroke="#2a3a55"/>
+    <text x="945" y="331">Scaffolding and generation</text>
+    <rect x="920" y="364" width="560" height="48" rx="10" fill="#182234" stroke="#2a3a55"/>
+    <text x="945" y="395">Refactoring and UI exploration</text>
+    <rect x="920" y="428" width="560" height="48" rx="10" fill="#182234" stroke="#2a3a55"/>
+    <text x="945" y="459">Test and docs assistance</text>
+    <rect x="920" y="492" width="560" height="48" rx="10" fill="#182234" stroke="#2a3a55"/>
+    <text x="945" y="523">Debugging support</text>
+    <rect x="920" y="556" width="560" height="48" rx="10" fill="#182234" stroke="#2a3a55"/>
+    <text x="945" y="587">PWA / TTS helper wiring</text>
+    <rect x="920" y="620" width="560" height="48" rx="10" fill="#182234" stroke="#2a3a55"/>
+    <text x="945" y="651">Never owns production judgment</text>
+  </g>
+
+  <text x="800" y="820" text-anchor="middle" fill="#6b7c96" font-family="Segoe UI, Arial, sans-serif" font-size="16">Intent - Rules - AI implementation - Engineer review - CI - Deploy - Feedback</text>
+</svg>

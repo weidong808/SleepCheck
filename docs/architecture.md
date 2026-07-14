@@ -195,5 +195,6 @@ Same series thesis, domain-appropriate architecture.
 - Live app: https://sleepcheck.weidong-shi.com  
 - Hub: https://weidong-shi.com  
 - Hub article: https://weidong-shi.com/articles/ai-in-action-sleepcheck  
+- LinkedIn article: https://www.linkedin.com/pulse/ai-action-2-from-idea-sleepcheck-weidong-shi-0fwrc  
 - RetireCheck article: https://weidong-shi.com/articles/ai-in-action-retirecheck  
 - Roadmap: https://github.com/weidong808/ai-in-action-roadmap  

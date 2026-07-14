@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1100" viewBox="0 0 1600 1100">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1220"/>
+      <stop offset="100%" stop-color="#070b14"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#121a2b"/>
+      <stop offset="100%" stop-color="#0e1524"/>
+    </linearGradient>
+    <linearGradient id="layerAccent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#152033"/>
+      <stop offset="100%" stop-color="#101826"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="1100" fill="url(#bg)"/>
+
+  <text x="80" y="72" fill="#f3f5f8" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700">Reference Architecture</text>
+  <text x="80" y="112" fill="#9aa7bd" font-family="Segoe UI, Arial, sans-serif" font-size="20">Local-first Progressive Web App</text>
+  <text x="1520" y="72" text-anchor="end" fill="#3ecf8e" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="2">AI IN ACTION · SLEEPCHECK</text>
+
+  <!-- Layer 1: User Experience -->
+  <rect x="80" y="150" width="1440" height="120" rx="18" fill="url(#card)" stroke="#3ecf8e" stroke-width="2"/>
+  <text x="110" y="188" fill="#3ecf8e" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.5">USER EXPERIENCE</text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="600" fill="#e8eef8">
+    <rect x="110" y="208" width="240" height="42" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="230" y="235" text-anchor="middle">Sleep</text>
+    <rect x="370" y="208" width="240" height="42" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="490" y="235" text-anchor="middle">Stories</text>
+    <rect x="630" y="208" width="240" height="42" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="750" y="235" text-anchor="middle">Breathe</text>
+    <rect x="890" y="208" width="240" height="42" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="1010" y="235" text-anchor="middle">Timer</text>
+    <rect x="1150" y="208" width="330" height="42" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="1315" y="235" text-anchor="middle">Sharing</text>
+  </g>
+
+  <polygon points="800,285 812,305 788,305" fill="#3ecf8e"/>
+
+  <!-- Layer 2: Application Domain -->
+  <rect x="80" y="320" width="1440" height="120" rx="18" fill="url(#card)" stroke="#3d6fd8" stroke-width="2"/>
+  <text x="110" y="358" fill="#7aa2ef" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.5">APPLICATION DOMAIN</text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="600" fill="#e8eef8">
+    <rect x="110" y="378" width="250" height="42" rx="10" fill="#182234" stroke="#2a3a55"/>
+    <text x="235" y="405" text-anchor="middle">Player</text>
+    <rect x="380" y="378" width="250" height="42" rx="10" fill="#182234" stroke="#2a3a55"/>
+    <text x="505" y="405" text-anchor="middle">Audio Engine</text>
+    <rect x="650" y="378" width="250" height="42" rx="10" fill="#182234" stroke="#2a3a55"/>
+    <text x="775" y="405" text-anchor="middle">Narration</text>
+    <rect x="920" y="378" width="250" height="42" rx="10" fill="#182234" stroke="#2a3a55"/>
+    <text x="1045" y="405" text-anchor="middle">Preferences</text>
+    <rect x="1190" y="378" width="290" height="42" rx="10" fill="#182234" stroke="#2a3a55"/>
+    <text x="1335" y="405" text-anchor="middle">Session Manager</text>
+  </g>
+
+  <polygon points="800,455 812,475 788,475" fill="#3ecf8e"/>
+
+  <!-- Layer 3: Browser Platform -->
+  <rect x="80" y="490" width="1440" height="120" rx="18" fill="url(#card)" stroke="#5a6d88" stroke-width="2"/>
+  <text x="110" y="528" fill="#9aa7bd" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.5">BROWSER PLATFORM</text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="600" fill="#e8eef8">
+    <rect x="110" y="548" width="210" height="42" rx="10" fill="#182234" stroke="#3a4a63"/>
+    <text x="215" y="575" text-anchor="middle">Web Audio API</text>
+    <rect x="340" y="548" width="210" height="42" rx="10" fill="#182234" stroke="#3a4a63"/>
+    <text x="445" y="575" text-anchor="middle">Speech Synthesis</text>
+    <rect x="570" y="548" width="200" height="42" rx="10" fill="#182234" stroke="#3a4a63"/>
+    <text x="670" y="575" text-anchor="middle">Local Storage</text>
+    <rect x="790" y="548" width="200" height="42" rx="10" fill="#182234" stroke="#3a4a63"/>
+    <text x="890" y="575" text-anchor="middle">Media Session</text>
+    <rect x="1010" y="548" width="220" height="42" rx="10" fill="#182234" stroke="#3a4a63"/>
+    <text x="1120" y="575" text-anchor="middle">Service Worker</text>
+    <rect x="1250" y="548" width="230" height="42" rx="10" fill="#182234" stroke="#3a4a63"/>
+    <text x="1365" y="575" text-anchor="middle">PWA Cache</text>
+  </g>
+
+  <polygon points="800,625 812,645 788,645" fill="#3ecf8e"/>
+
+  <!-- Layer 4: Engineering Platform -->
+  <rect x="80" y="660" width="1440" height="120" rx="18" fill="url(#card)" stroke="#3ecf8e" stroke-width="2"/>
+  <text x="110" y="698" fill="#3ecf8e" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.5">ENGINEERING PLATFORM</text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="600" fill="#e8eef8">
+    <rect x="110" y="718" width="250" height="42" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="235" y="745" text-anchor="middle">Next.js</text>
+    <rect x="380" y="718" width="250" height="42" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="505" y="745" text-anchor="middle">TypeScript</text>
+    <rect x="650" y="718" width="250" height="42" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="775" y="745" text-anchor="middle">GitHub</text>
+    <rect x="920" y="718" width="280" height="42" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="1060" y="745" text-anchor="middle">GitHub Actions</text>
+    <rect x="1220" y="718" width="260" height="42" rx="10" fill="#182234" stroke="#2f5a48"/>
+    <text x="1350" y="745" text-anchor="middle">Vercel</text>
+  </g>
+
+  <!-- Design Decisions -->
+  <rect x="80" y="820" width="700" height="220" rx="18" fill="url(#layerAccent)" stroke="#3ecf8e" stroke-width="2"/>
+  <text x="110" y="862" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Design Decisions</text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#e8eef8">
+    <text x="110" y="908"><tspan fill="#3ecf8e" font-weight="700"></tspan>  No account required</text>
+    <text x="110" y="942"><tspan fill="#3ecf8e" font-weight="700"></tspan>  No backend in the critical path</text>
+    <text x="110" y="976"><tspan fill="#3ecf8e" font-weight="700"></tspan>  Data remains on-device</text>
+    <text x="110" y="1010"><tspan fill="#3ecf8e" font-weight="700"></tspan>  Offline capable</text>
+    <text x="430" y="908"><tspan fill="#3ecf8e" font-weight="700"></tspan>  One codebase</text>
+  </g>
+
+  <!-- Trade-offs -->
+  <rect x="820" y="820" width="700" height="220" rx="18" fill="url(#layerAccent)" stroke="#5a6d88" stroke-width="2"/>
+  <text x="850" y="862" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Trade-offs</text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#e8eef8">
+    <text x="850" y="908"><tspan fill="#c07070" font-weight="700">×</tspan>  No cloud synchronization</text>
+    <text x="850" y="942"><tspan fill="#c07070" font-weight="700">×</tspan>  Device voices vary</text>
+    <text x="850" y="976"><tspan fill="#c07070" font-weight="700">×</tspan>  Preferences stay on one device</text>
+  </g>
+
+  <text x="800" y="1075" text-anchor="middle" fill="#6b7c96" font-family="Segoe UI, Arial, sans-serif" font-size="15">Different products deserve different architectures  the browser owns the SleepCheck domain</text>
+</svg>

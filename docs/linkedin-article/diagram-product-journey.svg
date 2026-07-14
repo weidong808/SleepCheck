@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1220"/>
+      <stop offset="100%" stop-color="#070b14"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#121a2b"/>
+      <stop offset="100%" stop-color="#0e1524"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <text x="80" y="78" fill="#f3f5f8" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700">SleepCheck - product journey</text>
+  <text x="80" y="118" fill="#9aa7bd" font-family="Segoe UI, Arial, sans-serif" font-size="20">From idea to feedback loop - AI in Action #2</text>
+
+  <!-- Row 1 -->
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="60" y="180" width="200" height="88" rx="14" fill="url(#card)" stroke="#3d6fd8" stroke-width="2"/>
+    <text x="160" y="232" text-anchor="middle" fill="#e8eef8" font-size="18" font-weight="600">Idea</text>
+
+    <polygon points="275,224 295,224 295,214 320,234 295,254 295,244 275,244" fill="#3ecf8e"/>
+
+    <rect x="335" y="180" width="200" height="88" rx="14" fill="url(#card)" stroke="#3d6fd8" stroke-width="2"/>
+    <text x="435" y="222" text-anchor="middle" fill="#e8eef8" font-size="17" font-weight="600">User problem</text>
+    <text x="435" y="248" text-anchor="middle" fill="#8fa0ba" font-size="14">calm without signup</text>
+
+    <polygon points="550,224 570,224 570,214 595,234 570,254 570,244 550,244" fill="#3ecf8e"/>
+
+    <rect x="610" y="180" width="200" height="88" rx="14" fill="url(#card)" stroke="#3d6fd8" stroke-width="2"/>
+    <text x="710" y="222" text-anchor="middle" fill="#e8eef8" font-size="17" font-weight="600">Requirements</text>
+    <text x="710" y="248" text-anchor="middle" fill="#8fa0ba" font-size="14">local-first / PWA</text>
+
+    <polygon points="825,224 845,224 845,214 870,234 845,254 845,244 825,244" fill="#3ecf8e"/>
+
+    <rect x="885" y="180" width="200" height="88" rx="14" fill="url(#card)" stroke="#3d6fd8" stroke-width="2"/>
+    <text x="985" y="222" text-anchor="middle" fill="#e8eef8" font-size="17" font-weight="600">Product design</text>
+    <text x="985" y="248" text-anchor="middle" fill="#8fa0ba" font-size="14">player-first UX</text>
+
+    <polygon points="1100,224 1120,224 1120,214 1145,234 1120,254 1120,244 1100,244" fill="#3ecf8e"/>
+
+    <rect x="1160" y="180" width="360" height="88" rx="14" fill="url(#card)" stroke="#3ecf8e" stroke-width="2.5"/>
+    <text x="1340" y="222" text-anchor="middle" fill="#e8eef8" font-size="17" font-weight="600">Architecture + rules</text>
+    <text x="1340" y="248" text-anchor="middle" fill="#8fa0ba" font-size="14">browser owns the domain</text>
+  </g>
+
+  <!-- Row 2 -->
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="60" y="360" width="260" height="88" rx="14" fill="url(#card)" stroke="#3ecf8e" stroke-width="2.5"/>
+    <text x="190" y="402" text-anchor="middle" fill="#e8eef8" font-size="17" font-weight="600">AI-assisted build</text>
+    <text x="190" y="428" text-anchor="middle" fill="#8fa0ba" font-size="14">inside human intent</text>
+
+    <polygon points="335,404 355,404 355,394 380,414 355,434 355,424 335,424" fill="#3ecf8e"/>
+
+    <rect x="395" y="360" width="200" height="88" rx="14" fill="url(#card)" stroke="#3d6fd8" stroke-width="2"/>
+    <text x="495" y="402" text-anchor="middle" fill="#e8eef8" font-size="17" font-weight="600">Testing</text>
+    <text x="495" y="428" text-anchor="middle" fill="#8fa0ba" font-size="14">listen + verify</text>
+
+    <polygon points="610,404 630,404 630,394 655,414 630,434 630,424 610,424" fill="#3ecf8e"/>
+
+    <rect x="670" y="360" width="200" height="88" rx="14" fill="url(#card)" stroke="#3d6fd8" stroke-width="2"/>
+    <text x="770" y="402" text-anchor="middle" fill="#e8eef8" font-size="17" font-weight="600">CI/CD</text>
+    <text x="770" y="428" text-anchor="middle" fill="#8fa0ba" font-size="14">typecheck / build</text>
+
+    <polygon points="885,404 905,404 905,394 930,414 905,434 905,424 885,424" fill="#3ecf8e"/>
+
+    <rect x="945" y="360" width="240" height="88" rx="14" fill="url(#card)" stroke="#3d6fd8" stroke-width="2"/>
+    <text x="1065" y="402" text-anchor="middle" fill="#e8eef8" font-size="17" font-weight="600">Cloud deploy</text>
+    <text x="1065" y="428" text-anchor="middle" fill="#8fa0ba" font-size="14">Vercel + domain</text>
+
+    <polygon points="1200,404 1220,404 1220,394 1245,414 1220,434 1220,424 1200,424" fill="#3ecf8e"/>
+
+    <rect x="1260" y="360" width="260" height="88" rx="14" fill="url(#card)" stroke="#3ecf8e" stroke-width="2.5"/>
+    <text x="1390" y="402" text-anchor="middle" fill="#e8eef8" font-size="17" font-weight="600">SleepCheck live</text>
+    <text x="1390" y="428" text-anchor="middle" fill="#8fa0ba" font-size="14">sleepcheck.weidong-shi.com</text>
+  </g>
+
+  <!-- Feedback loop -->
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="400" y="560" width="320" height="88" rx="14" fill="url(#card)" stroke="#3d6fd8" stroke-width="2"/>
+    <text x="560" y="612" text-anchor="middle" fill="#e8eef8" font-size="18" font-weight="600">Feedback</text>
+
+    <rect x="880" y="560" width="320" height="88" rx="14" fill="url(#card)" stroke="#3ecf8e" stroke-width="2.5"/>
+    <text x="1040" y="602" text-anchor="middle" fill="#e8eef8" font-size="18" font-weight="600">Continuous improvement</text>
+    <text x="1040" y="628" text-anchor="middle" fill="#8fa0ba" font-size="14">back to requirements</text>
+
+    <line x1="720" y1="604" x2="880" y2="604" stroke="#3ecf8e" stroke-width="3"/>
+    <polygon points="880,604 864,596 864,612" fill="#3ecf8e"/>
+
+    <path d="M 1040 648 L 1040 720 L 710 720 L 710 268" fill="none" stroke="#5a6d88" stroke-width="2" stroke-dasharray="7 6"/>
+    <polygon points="710,268 702,284 718,284" fill="#5a6d88"/>
+  </g>
+
+  <text x="800" y="840" text-anchor="middle" fill="#6b7c96" font-family="Segoe UI, Arial, sans-serif" font-size="16">AI in Action - Build / Validate / Improve / Document / Share</text>
+</svg>
