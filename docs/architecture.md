@@ -57,50 +57,11 @@ Problem → Product thinking → Requirements → Architecture
 
 SleepCheck is intentionally **client-heavy**. There is no separate calculation API (contrast with RetireCheck’s ASP.NET domain). Runtime “domain” lives in the browser.
 
-```mermaid
-flowchart TB
-  subgraph Hub["weidong-shi.com — AI in Action"]
-    Brand[Parent brand chrome]
-  end
+![SleepCheck architecture](./sleepcheck-architecture.png)
 
-  subgraph App["Next.js App Router PWA — Vercel"]
-    UI[SleepApp UI<br/>Scenes · Stories · Breathe · Timer]
-    AE[AudioEngine<br/>Web Audio API]
-    TTS[speechSynthesis TTS]
-    Store[localStorage preferences + streak]
-    SW[Service worker<br/>app shell + audio cache]
-  end
+*One rule: the browser owns the domain — audio, prefs, and speech stay on-device.*
 
-  Brand --> UI
-  UI --> AE
-  UI --> TTS
-  UI --> Store
-  SW --> UI
-  SW --> AE
-```
-
-ASCII equivalent:
-
-```
-┌──────────────────────────────────────────────────┐
-│  Next.js App Router (Vercel PWA)                 │
-│                                                  │
-│  ┌─────────────┐  ┌──────────────────────────┐   │
-│  │ SleepApp UI │→ │ AudioEngine (Web Audio)  │   │
-│  │ tabs/player │  │ loops + synth + master FX│   │
-│  └──────┬──────┘  └──────────────────────────┘   │
-│         │                                        │
-│         ├→ speechSynthesis (stories / breathe)   │
-│         ├→ localStorage (prefs + streak)         │
-│         └→ Service worker (offline shell/audio)  │
-└──────────────────────────────────────────────────┘
-         ▲
-         │ brand / series
-┌────────┴─────────┐
-│  weidong-shi.com │
-└──────────────────┘
-```
-
+Source diagram: [`sleepcheck-architecture.svg`](./sleepcheck-architecture.svg)
 ### Key modules
 
 | Area | Responsibility |
