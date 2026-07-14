@@ -578,7 +578,7 @@ export function SleepApp() {
       />
 
       <div className="shell">
-        <header className="mb-8 flex items-center justify-between gap-4 border-b border-border/70 pb-4">
+        <header className="mb-4 flex items-center justify-between gap-4 border-b border-border/70 pb-3">
           <Link href="/" className="group flex min-w-0 items-center gap-3">
             <Image
               src="/icon-192.png"

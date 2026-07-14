@@ -27,7 +27,7 @@ export default function AboutPage() {
         <SiteHomeLink variant="compact" markSize={18} className="text-sm text-muted" />
       </div>
 
-      <div className="mt-8 overflow-hidden border border-border">
+      <div className="mt-4 overflow-hidden border border-border">
         <Image
           src="/og.png"
           alt={`${APP_NAME} — ${APP_TAGLINE}`}
