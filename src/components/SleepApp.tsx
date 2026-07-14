@@ -1228,8 +1228,16 @@ export function SleepApp() {
                       href={SITE_HOME_URL}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="transition-colors hover:text-foreground"
+                      className="flex items-center gap-2 transition-colors hover:text-foreground"
                     >
+                      <Image
+                        src="/ws-mark.svg"
+                        alt=""
+                        width={18}
+                        height={18}
+                        unoptimized
+                        className="h-[18px] w-[18px] rounded"
+                      />
                       weidong-shi.com
                     </a>
                   </li>

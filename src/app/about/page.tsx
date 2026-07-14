@@ -65,8 +65,16 @@ export default function AboutPage() {
           href={SITE_HOME_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn btn-secondary"
+          className="btn btn-secondary flex items-center gap-2.5"
         >
+          <Image
+            src="/ws-mark.svg"
+            alt="Weidong Shi monogram"
+            width={22}
+            height={22}
+            unoptimized
+            className="h-[22px] w-[22px] rounded-md"
+          />
           weidong-shi.com
         </a>
       </div>
