@@ -12,7 +12,7 @@ import {
   soundIcon,
 } from "@/components/Icons";
 import { BREATH_MODES } from "@/lib/breath";
-import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
+import { APP_NAME, APP_TAGLINE, SITE_HOME_URL } from "@/lib/brand";
 import { audioEngine } from "@/lib/audioEngine";
 import {
   PRESETS,
@@ -1178,10 +1178,80 @@ export function SleepApp() {
           </section>
         )}
 
-        <footer className="mt-14 border-t border-border pt-6 text-sm text-muted">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p>Everything stays on this device. Not medical advice.</p>
-            <p className="font-mono text-xs tracking-wide uppercase">{APP_NAME}</p>
+        <footer className="mt-16 border-t border-border pt-8 text-sm text-muted">
+          <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+            <div className="max-w-xs">
+              <div className="flex items-center gap-2.5">
+                <Image
+                  src="/icon-192.png"
+                  alt=""
+                  width={28}
+                  height={28}
+                  className="h-7 w-7 rounded-md border border-border"
+                />
+                <span className="display text-lg text-foreground">{APP_NAME}</span>
+              </div>
+              <p className="mt-3 text-xs leading-relaxed">
+                A calm wind-down companion. Everything stays on this device — no
+                account, no tracking. Not medical advice.
+              </p>
+            </div>
+            <div className="flex gap-12 text-xs">
+              <div>
+                <p className="section-label mb-3">App</p>
+                <ul className="space-y-2">
+                  <li>
+                    <Link
+                      href="/about"
+                      className="transition-colors hover:text-foreground"
+                    >
+                      About
+                    </Link>
+                  </li>
+                  <li>
+                    <a
+                      href={`${SITE_HOME_URL}/projects/sleep`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors hover:text-foreground"
+                    >
+                      Project notes
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <p className="section-label mb-3">More</p>
+                <ul className="space-y-2">
+                  <li>
+                    <a
+                      href={SITE_HOME_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors hover:text-foreground"
+                    >
+                      weidong-shi.com
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://retirecheck.weidong-shi.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors hover:text-foreground"
+                    >
+                      RetireCheck
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 flex flex-col gap-2 border-t border-border pt-5 text-xs sm:flex-row sm:items-center sm:justify-between">
+            <p>© {new Date().getFullYear()} Weidong Shi. All rights reserved.</p>
+            <p className="font-mono tracking-wide uppercase">
+              Built with Next.js · Deployed on Vercel
+            </p>
           </div>
         </footer>
       </div>

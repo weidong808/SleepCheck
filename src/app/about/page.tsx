@@ -70,6 +70,13 @@ export default function AboutPage() {
           weidong-shi.com
         </a>
       </div>
+
+      <footer className="mt-14 flex flex-col gap-2 border-t border-border pt-5 pb-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+        <p>© {new Date().getFullYear()} Weidong Shi. All rights reserved.</p>
+        <p className="font-mono tracking-wide uppercase">
+          Built with Next.js · Deployed on Vercel
+        </p>
+      </footer>
     </main>
   );
 }
