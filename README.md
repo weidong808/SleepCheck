@@ -38,7 +38,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Stack
 
 - Next.js (App Router) + TypeScript + Tailwind CSS v4
-- Deploy target: Vercel → `sleep.weidong-shi.com`
+- Deploy target: Vercel → `sleepcheck.weidong-shi.com`
 - Hub site: [weidong-shi.com](https://weidong-shi.com)
 
 ## License
