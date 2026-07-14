@@ -930,7 +930,13 @@ export function SleepApp() {
                       }`}
                       onClick={() => chooseNarrator(null)}
                     >
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full border border-accent/40 bg-accent/10">
+                      <span
+                        className={`flex h-7 w-7 items-center justify-center rounded-full border border-accent/40 bg-accent/10 transition-all ${
+                          prefs.voiceName == null
+                            ? "ring-2 ring-accent"
+                            : "opacity-75"
+                        }`}
+                      >
                         <IconMoon className="h-4 w-4 text-accent" />
                       </span>
                       Auto
@@ -946,11 +952,19 @@ export function SleepApp() {
                         }`}
                         onClick={() => chooseNarrator(n.name)}
                       >
-                        <NarratorAvatar
-                          name={n.name}
-                          gender={n.gender}
-                          className="h-7 w-7 shrink-0 rounded-full"
-                        />
+                        <span
+                          className={`inline-flex shrink-0 rounded-full transition-all ${
+                            prefs.voiceName === n.name
+                              ? "ring-2 ring-accent"
+                              : "opacity-75"
+                          }`}
+                        >
+                          <NarratorAvatar
+                            name={n.name}
+                            gender={n.gender}
+                            className="block h-7 w-7 rounded-full"
+                          />
+                        </span>
                         {n.label}
                         {n.tag !== "Standard" && (
                           <span className="border border-accent/40 px-1.5 py-0.5 text-[10px] tracking-wide text-accent uppercase">
