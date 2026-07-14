@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   APP_DESCRIPTION,
@@ -21,6 +22,17 @@ export default function AboutPage() {
       >
         ← Back to {APP_NAME}
       </Link>
+
+      <div className="mt-8 overflow-hidden border border-border">
+        <Image
+          src="/og.png"
+          alt={`${APP_NAME} — ${APP_TAGLINE}`}
+          width={1200}
+          height={630}
+          priority
+          className="h-auto w-full"
+        />
+      </div>
 
       <p className="eyebrow mt-10">{APP_NAME}</p>
       <h1 className="display mt-4 text-4xl text-foreground sm:text-5xl">
