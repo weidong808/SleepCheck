@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -571,9 +572,24 @@ export function SleepApp() {
 
       <div className="shell">
         <header className="mb-8 flex items-center justify-between gap-4 pb-2">
-          <p className="font-mono text-[11px] tracking-[0.18em] text-muted uppercase">
-            {APP_NAME}
-          </p>
+          <Link href="/" className="group flex items-center gap-3">
+            <Image
+              src="/icon-192.png"
+              alt={`${APP_NAME} logo`}
+              width={40}
+              height={40}
+              priority
+              className="h-10 w-10 rounded-lg border border-border transition-colors group-hover:border-accent/50"
+            />
+            <span>
+              <span className="display block text-2xl leading-none text-foreground transition-colors group-hover:text-accent">
+                {APP_NAME}
+              </span>
+              <span className="mt-1 block font-mono text-[10px] tracking-[0.18em] text-muted uppercase">
+                {APP_TAGLINE}
+              </span>
+            </span>
+          </Link>
           <div className="flex items-center gap-4 text-sm">
             {streak && streak.current > 0 && (
               <span
