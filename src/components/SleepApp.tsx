@@ -12,7 +12,14 @@ import {
   soundIcon,
 } from "@/components/Icons";
 import { BREATH_MODES } from "@/lib/breath";
-import { APP_NAME, APP_TAGLINE, SITE_HOME_URL } from "@/lib/brand";
+import { SiteHomeLink } from "@/components/SiteHomeLink";
+import {
+  APP_NAME,
+  APP_TAGLINE,
+  RETIRECHECK_URL,
+  SITE_HOME_URL,
+  SITE_SERIES_NAME,
+} from "@/lib/brand";
 import { audioEngine } from "@/lib/audioEngine";
 import {
   PRESETS,
@@ -566,13 +573,13 @@ export function SleepApp() {
         className="pointer-events-none fixed inset-0 z-[1]"
         style={{
           background:
-            "radial-gradient(ellipse 70% 45% at 15% 0%, var(--hero-glow), transparent 55%), radial-gradient(ellipse 50% 40% at 90% 10%, rgba(217,161,62,0.07), transparent 50%)",
+            "radial-gradient(ellipse 70% 45% at 15% 0%, var(--hero-glow), transparent 55%), radial-gradient(ellipse 50% 40% at 90% 10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 50%)",
         }}
       />
 
       <div className="shell">
-        <header className="mb-8 flex items-center justify-between gap-4 pb-2">
-          <Link href="/" className="group flex items-center gap-3">
+        <header className="mb-8 flex items-center justify-between gap-4 border-b border-border/70 pb-4">
+          <Link href="/" className="group flex min-w-0 items-center gap-3">
             <Image
               src="/icon-192.png"
               alt={`${APP_NAME} logo`}
@@ -581,19 +588,19 @@ export function SleepApp() {
               priority
               className="h-10 w-10 rounded-lg border border-border transition-colors group-hover:border-accent/50"
             />
-            <span>
+            <span className="min-w-0">
               <span className="display block text-2xl leading-none text-foreground transition-colors group-hover:text-accent">
                 {APP_NAME}
               </span>
-              <span className="mt-1 block font-mono text-[10px] tracking-[0.18em] text-muted uppercase">
-                {APP_TAGLINE}
+              <span className="mt-1 block font-mono text-[10px] tracking-[0.14em] text-muted uppercase">
+                {SITE_SERIES_NAME} · {APP_TAGLINE}
               </span>
             </span>
           </Link>
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex shrink-0 items-center gap-3 text-sm sm:gap-4">
             {streak && streak.current > 0 && (
               <span
-                className="flex items-center gap-1.5 text-muted"
+                className="hidden items-center gap-1.5 text-muted sm:flex"
                 title={`Wind-down streak · best ${streak.best}`}
               >
                 <IconMoon className="h-4 w-4 text-accent" />
@@ -606,6 +613,11 @@ export function SleepApp() {
             >
               About
             </Link>
+            <SiteHomeLink
+              variant="compact"
+              markSize={18}
+              className="hidden text-muted sm:inline-flex"
+            />
           </div>
         </header>
 
@@ -1180,7 +1192,7 @@ export function SleepApp() {
 
         <footer className="mt-16 border-t border-border pt-8 text-sm text-muted">
           <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
-            <div className="max-w-xs">
+            <div className="max-w-sm">
               <div className="flex items-center gap-2.5">
                 <Image
                   src="/icon-192.png"
@@ -1193,8 +1205,16 @@ export function SleepApp() {
               </div>
               <p className="mt-3 text-xs leading-relaxed">
                 A calm wind-down companion. Everything stays on this device — no
-                account, no tracking. Not medical advice.
+                account, no tracking. Not medical advice. Part of{" "}
+                {SITE_SERIES_NAME}.
               </p>
+              <div className="mt-4">
+                <SiteHomeLink
+                  variant="full"
+                  markSize={28}
+                  className="text-foreground"
+                />
+              </div>
             </div>
             <div className="flex gap-12 text-xs">
               <div>
@@ -1215,35 +1235,20 @@ export function SleepApp() {
                       rel="noopener noreferrer"
                       className="transition-colors hover:text-foreground"
                     >
-                      Project notes
+                      Case study
                     </a>
                   </li>
                 </ul>
               </div>
               <div>
-                <p className="section-label mb-3">More</p>
+                <p className="section-label mb-3">Series</p>
                 <ul className="space-y-2">
                   <li>
-                    <a
-                      href={SITE_HOME_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 transition-colors hover:text-foreground"
-                    >
-                      <Image
-                        src="/ws-mark.svg"
-                        alt=""
-                        width={18}
-                        height={18}
-                        unoptimized
-                        className="h-[18px] w-[18px] rounded"
-                      />
-                      weidong-shi.com
-                    </a>
+                    <SiteHomeLink variant="compact" markSize={16} />
                   </li>
                   <li>
                     <a
-                      href="https://retirecheck.weidong-shi.com"
+                      href={RETIRECHECK_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="transition-colors hover:text-foreground"
@@ -1258,7 +1263,7 @@ export function SleepApp() {
           <div className="mt-8 flex flex-col gap-2 border-t border-border pt-5 text-xs sm:flex-row sm:items-center sm:justify-between">
             <p>© {new Date().getFullYear()} Weidong Shi. All rights reserved.</p>
             <p className="font-mono tracking-wide uppercase">
-              Built with Next.js · Deployed on Vercel
+              {SITE_SERIES_NAME} · Built with Next.js · Deployed on Vercel
             </p>
           </div>
         </footer>

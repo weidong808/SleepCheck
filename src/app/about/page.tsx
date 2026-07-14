@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { SiteHomeLink } from "@/components/SiteHomeLink";
 import {
   APP_DESCRIPTION,
   APP_NAME,
   APP_TAGLINE,
-  SITE_HOME_URL,
+  SITE_SERIES_NAME,
 } from "@/lib/brand";
 
 export const metadata: Metadata = {
@@ -16,12 +17,15 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <main className="shell max-w-2xl">
-      <Link
-        href="/"
-        className="text-sm text-muted transition-colors hover:text-foreground"
-      >
-        ← Back to {APP_NAME}
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link
+          href="/"
+          className="text-sm text-muted transition-colors hover:text-foreground"
+        >
+          ← Back to {APP_NAME}
+        </Link>
+        <SiteHomeLink variant="compact" markSize={18} className="text-sm text-muted" />
+      </div>
 
       <div className="mt-8 overflow-hidden border border-border">
         <Image
@@ -34,7 +38,9 @@ export default function AboutPage() {
         />
       </div>
 
-      <p className="eyebrow mt-10">{APP_NAME}</p>
+      <p className="eyebrow mt-10">
+        {SITE_SERIES_NAME} · {APP_NAME}
+      </p>
       <h1 className="display mt-4 text-4xl text-foreground sm:text-5xl">
         {APP_TAGLINE}
       </h1>
@@ -61,28 +67,17 @@ export default function AboutPage() {
         <Link href="/" className="btn btn-primary">
           Open SleepCheck
         </Link>
-        <a
-          href={SITE_HOME_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-secondary flex items-center gap-2.5"
-        >
-          <Image
-            src="/ws-mark.svg"
-            alt="Weidong Shi monogram"
-            width={22}
-            height={22}
-            unoptimized
-            className="h-[22px] w-[22px] rounded-md"
-          />
-          weidong-shi.com
-        </a>
+        <SiteHomeLink
+          variant="full"
+          markSize={22}
+          className="btn btn-secondary"
+        />
       </div>
 
-      <footer className="mt-14 flex flex-col gap-2 border-t border-border pt-5 pb-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+      <footer className="mt-14 flex flex-col gap-3 border-t border-border pt-5 pb-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
         <p>© {new Date().getFullYear()} Weidong Shi. All rights reserved.</p>
         <p className="font-mono tracking-wide uppercase">
-          Built with Next.js · Deployed on Vercel
+          {SITE_SERIES_NAME} · Built with Next.js · Deployed on Vercel
         </p>
       </footer>
     </main>
