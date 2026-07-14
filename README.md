@@ -4,6 +4,13 @@ Calm wind-down companion: natural soundscapes, bedtime stories, guided breathing
 
 **Tagline:** Ease your mind into sleep.
 
+| | |
+|--------|--------|
+| **Live demo** | [sleepcheck.weidong-shi.com](https://sleepcheck.weidong-shi.com) |
+| **Architecture** | [docs/architecture.md](docs/architecture.md) |
+| **Series** | [AI in Action on weidong-shi.com](https://weidong-shi.com) · [SleepCheck case study article](https://weidong-shi.com/articles/ai-in-action-sleepcheck) |
+| **Roadmap** | [ai-in-action-roadmap](https://github.com/weidong808/ai-in-action-roadmap) |
+
 ## Features
 
 | Feature | How it works |
