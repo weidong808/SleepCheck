@@ -44,7 +44,7 @@ import {
   speakSentences,
   speakText,
 } from "@/lib/speech";
-import { STORIES } from "@/lib/stories";
+import { STORIES, type Story } from "@/lib/stories";
 import {
   type BreathModeId,
   type SleepPreferences,
@@ -93,6 +93,8 @@ export function SleepApp() {
   const preloadedRef = useRef(false);
   const timerLeftRef = useRef<number | null>(null);
   const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
+  const storyControlsRef = useRef<HTMLDivElement | null>(null);
+  const lastScrolledStoryRef = useRef<string | null>(null);
 
   useEffect(() => {
     const loaded = loadPreferences();
@@ -184,6 +186,25 @@ export function SleepApp() {
     () => STORIES.find((s) => s.id === prefs?.storyId) ?? STORIES[0],
     [prefs?.storyId],
   );
+
+  // On mobile, story controls sit under the selected card — scroll them into view
+  // so picking a story never leaves Read / Pause / Narrator below the fold.
+  const storiesTab = prefs?.tab;
+  const activeStoryId = prefs?.storyId;
+  useEffect(() => {
+    if (storiesTab !== "stories" || !activeStoryId) return;
+    if (lastScrolledStoryRef.current === activeStoryId) return;
+    lastScrolledStoryRef.current = activeStoryId;
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(max-width: 1023px)").matches) return;
+    const id = window.requestAnimationFrame(() => {
+      storyControlsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [storiesTab, activeStoryId]);
 
   const playing = reading || activeSounds.length > 0;
 
@@ -900,242 +921,100 @@ export function SleepApp() {
               {STORIES.map((s) => {
                 const selected = selectedStory.id === s.id;
                 return (
-                  <button
+                  <div
                     key={s.id}
-                    type="button"
-                    className={`relative h-28 overflow-hidden border text-left transition-all ${
-                      selected
-                        ? "border-accent/60"
-                        : "border-border hover:border-foreground/30"
-                    }`}
-                    onClick={() => {
-                      stopStory();
-                      updatePrefs({ storyId: s.id });
-                    }}
+                    ref={selected ? storyControlsRef : undefined}
+                    className={`flex flex-col gap-3 ${selected ? "scroll-mt-24" : ""}`}
                   >
-                    <span
-                      aria-hidden
-                      className="absolute inset-0 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${s.image})` }}
-                    />
-                    <span
-                      aria-hidden
-                      className="absolute inset-0"
-                      style={{
-                        background:
-                          "linear-gradient(90deg, rgba(9,11,10,0.85) 0%, rgba(9,11,10,0.45) 55%, rgba(9,11,10,0.15) 100%)",
+                    <button
+                      type="button"
+                      className={`relative h-28 overflow-hidden border text-left transition-all ${
+                        selected
+                          ? "border-accent/60"
+                          : "border-border hover:border-foreground/30"
+                      }`}
+                      onClick={() => {
+                        stopStory();
+                        lastScrolledStoryRef.current = null;
+                        updatePrefs({ storyId: s.id });
                       }}
-                    />
-                    <span className="relative z-10 flex h-full flex-col justify-end p-4">
-                      <span className="display block text-lg leading-tight text-foreground">
-                        {s.title}
+                    >
+                      <span
+                        aria-hidden
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${s.image})` }}
+                      />
+                      <span
+                        aria-hidden
+                        className="absolute inset-0"
+                        style={{
+                          background:
+                            "linear-gradient(90deg, rgba(9,11,10,0.85) 0%, rgba(9,11,10,0.45) 55%, rgba(9,11,10,0.15) 100%)",
+                        }}
+                      />
+                      <span className="relative z-10 flex h-full flex-col justify-end p-4">
+                        <span className="display block text-lg leading-tight text-foreground">
+                          {s.title}
+                        </span>
+                        <span className="mt-1 block text-xs text-muted">
+                          {s.meta}
+                        </span>
                       </span>
-                      <span className="mt-1 block text-xs text-muted">{s.meta}</span>
-                    </span>
-                    {selected && (
-                      <span className="absolute top-3 right-3 z-10 h-2 w-2 rounded-full bg-accent" />
-                    )}
-                  </button>
+                      {selected && (
+                        <span className="absolute top-3 right-3 z-10 h-2 w-2 rounded-full bg-accent" />
+                      )}
+                    </button>
+
+                    {/* Mobile: controls sit directly under the selected card */}
+                    {selected ? (
+                      <div className="lg:hidden">
+                        <StoryDetailPanel
+                          selectedStory={selectedStory}
+                          reading={reading}
+                          paused={paused}
+                          paragraph={paragraph}
+                          storyFill={storyFill}
+                          prefs={prefs}
+                          narrators={narrators}
+                          allVoices={allVoices}
+                          showAllVoices={showAllVoices}
+                          showEdgeTip={showEdgeTip}
+                          compact
+                          onStart={startStory}
+                          onTogglePause={togglePauseStory}
+                          onStop={stopStory}
+                          onChooseNarrator={chooseNarrator}
+                          onToggleAllVoices={() => setShowAllVoices((v) => !v)}
+                          onUpdatePrefs={updatePrefs}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
                 );
               })}
             </div>
 
-            <article className="panel flex flex-col overflow-hidden">
-              {/* Scene banner */}
-              <div className="relative h-44 shrink-0 sm:h-52">
-                <div
-                  aria-hidden
-                  className="absolute inset-0 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${selectedStory.image})` }}
-                />
-                <div
-                  aria-hidden
-                  className="absolute inset-0"
-                  style={{
-                    background:
-                      "linear-gradient(180deg, rgba(9,11,10,0.1) 0%, rgba(9,11,10,0.55) 70%, var(--card) 100%)",
-                  }}
-                />
-                <div className="absolute right-0 bottom-0 left-0 z-10 flex items-end justify-between gap-4 p-5 sm:p-6">
-                  <div>
-                    <h3 className="display text-3xl text-foreground drop-shadow">
-                      {selectedStory.title}
-                    </h3>
-                    <p className="mt-1 text-xs text-muted">{selectedStory.meta}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-5 p-6 sm:p-7">
-                <div className="flex flex-wrap items-center gap-2">
-                  <button type="button" className="btn btn-primary" onClick={startStory}>
-                    {reading ? "Restart" : "Read to me"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={togglePauseStory}
-                    disabled={!reading}
-                  >
-                    {paused ? "Resume" : "Pause"}
-                  </button>
-                  <button type="button" className="btn btn-ghost" onClick={stopStory}>
-                    Stop
-                  </button>
-                </div>
-
-                {/* Narrator picker */}
-                <div className="border border-border bg-background/40 p-4">
-                  <p className="mb-3 text-xs text-muted">
-                    Narrator — tap to hear a sample
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      aria-pressed={prefs.voiceName == null}
-                      className={`flex items-center gap-2 border py-1.5 pr-3 pl-1.5 text-sm transition-colors ${
-                        prefs.voiceName == null
-                          ? "border-accent/50 bg-accent/10 text-foreground"
-                          : "border-border text-muted hover:text-foreground"
-                      }`}
-                      onClick={() => chooseNarrator(null)}
-                    >
-                      <span
-                        className={`flex h-7 w-7 items-center justify-center rounded-full border border-accent/40 bg-accent/10 transition-all ${
-                          prefs.voiceName == null
-                            ? "ring-2 ring-accent"
-                            : "opacity-75"
-                        }`}
-                      >
-                        <IconMoon className="h-4 w-4 text-accent" />
-                      </span>
-                      Auto
-                    </button>
-                    {narrators.map((n) => (
-                      <button
-                        key={n.name}
-                        type="button"
-                        aria-pressed={prefs.voiceName === n.name}
-                        className={`flex items-center gap-2 border py-1.5 pr-3 pl-1.5 text-sm transition-colors ${
-                          prefs.voiceName === n.name
-                            ? "border-accent/50 bg-accent/10 text-foreground"
-                            : "border-border text-muted hover:text-foreground"
-                        }`}
-                        onClick={() => chooseNarrator(n.name)}
-                      >
-                        <span
-                          className={`inline-flex shrink-0 rounded-full transition-all ${
-                            prefs.voiceName === n.name
-                              ? "ring-2 ring-accent"
-                              : "opacity-75"
-                          }`}
-                        >
-                          <NarratorAvatar
-                            name={n.name}
-                            gender={n.gender}
-                            className="block h-7 w-7 rounded-full"
-                          />
-                        </span>
-                        {n.label}
-                        {n.tag !== "Standard" && (
-                          <span className="border border-accent/40 px-1.5 py-0.5 text-[10px] tracking-wide text-accent uppercase">
-                            {n.tag}
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                  {showEdgeTip && (
-                    <p className="mt-3 text-xs text-muted">
-                      Tip: on Windows, opening this app in{" "}
-                      <span className="text-foreground">Microsoft Edge</span> unlocks
-                      free natural-sounding narrator voices.
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    className="mt-3 text-xs text-muted underline-offset-2 hover:text-foreground hover:underline"
-                    onClick={() => setShowAllVoices((v) => !v)}
-                  >
-                    {showAllVoices ? "Hide all voices" : `All device voices (${allVoices.length})`}
-                  </button>
-                  {showAllVoices && (
-                    <select
-                      value={prefs.voiceName ?? ""}
-                      onChange={(e) => chooseNarrator(e.target.value || null)}
-                      className="mt-2 w-full border border-border bg-card px-2 py-2 text-sm text-foreground outline-none"
-                    >
-                      <option value="">Auto — best available</option>
-                      {allVoices.map((v) => (
-                        <option key={v.name} value={v.name}>
-                          {v.name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="border border-border bg-background/40 p-3">
-                    <span className="mb-2 flex justify-between text-xs text-muted">
-                      <span>Speed</span>
-                      <span>
-                        {prefs.rate < 0.66
-                          ? "Very slow"
-                          : prefs.rate < 0.78
-                            ? "Slow"
-                            : "Relaxed"}
-                      </span>
-                    </span>
-                    <input
-                      type="range"
-                      min={0.55}
-                      max={0.9}
-                      step={0.01}
-                      value={prefs.rate}
-                      onChange={(e) => updatePrefs({ rate: parseFloat(e.target.value) })}
-                    />
-                  </label>
-                  <label className="border border-border bg-background/40 p-3">
-                    <span className="mb-2 flex justify-between text-xs text-muted">
-                      <span>Warmth</span>
-                      <span>
-                        {prefs.pitch < 0.82
-                          ? "Warm"
-                          : prefs.pitch < 0.94
-                            ? "Gentle"
-                            : "Bright"}
-                      </span>
-                    </span>
-                    <input
-                      type="range"
-                      min={0.72}
-                      max={1.02}
-                      step={0.01}
-                      value={prefs.pitch}
-                      onChange={(e) => updatePrefs({ pitch: parseFloat(e.target.value) })}
-                    />
-                  </label>
-                </div>
-
-                <div className="h-px bg-border">
-                  <div
-                    className="h-px bg-accent transition-[width] duration-500"
-                    style={{ width: `${storyFill}%` }}
-                  />
-                </div>
-                <div className="max-h-[280px] overflow-auto border border-border bg-background/50 p-5 text-[0.95rem] leading-[1.9] text-muted">
-                  {selectedStory.paras.map((p, i) => (
-                    <p
-                      key={i}
-                      className={`mb-4 last:mb-0 ${i === paragraph ? "text-foreground" : ""}`}
-                    >
-                      {p}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            </article>
+            {/* Desktop / large: side panel stays in the second column */}
+            <div className="hidden lg:block">
+              <StoryDetailPanel
+                selectedStory={selectedStory}
+                reading={reading}
+                paused={paused}
+                paragraph={paragraph}
+                storyFill={storyFill}
+                prefs={prefs}
+                narrators={narrators}
+                allVoices={allVoices}
+                showAllVoices={showAllVoices}
+                showEdgeTip={showEdgeTip}
+                onStart={startStory}
+                onTogglePause={togglePauseStory}
+                onStop={stopStory}
+                onChooseNarrator={chooseNarrator}
+                onToggleAllVoices={() => setShowAllVoices((v) => !v)}
+                onUpdatePrefs={updatePrefs}
+              />
+            </div>
           </section>
         )}
 
@@ -1269,5 +1148,252 @@ export function SleepApp() {
         </footer>
       </div>
     </div>
+  );
+}
+
+type StoryDetailPanelProps = {
+  selectedStory: Story;
+  reading: boolean;
+  paused: boolean;
+  paragraph: number;
+  storyFill: number;
+  prefs: SleepPreferences;
+  narrators: Narrator[];
+  allVoices: SpeechSynthesisVoice[];
+  showAllVoices: boolean;
+  showEdgeTip: boolean;
+  compact?: boolean;
+  onStart: () => void;
+  onTogglePause: () => void;
+  onStop: () => void;
+  onChooseNarrator: (name: string | null) => void;
+  onToggleAllVoices: () => void;
+  onUpdatePrefs: (patch: Partial<SleepPreferences>) => void;
+};
+
+function StoryDetailPanel({
+  selectedStory,
+  reading,
+  paused,
+  paragraph,
+  storyFill,
+  prefs,
+  narrators,
+  allVoices,
+  showAllVoices,
+  showEdgeTip,
+  compact = false,
+  onStart,
+  onTogglePause,
+  onStop,
+  onChooseNarrator,
+  onToggleAllVoices,
+  onUpdatePrefs,
+}: StoryDetailPanelProps) {
+  return (
+    <article className="panel flex flex-col overflow-hidden">
+      <div
+        className={`relative shrink-0 ${compact ? "h-36" : "h-44 sm:h-52"}`}
+      >
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${selectedStory.image})` }}
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(9,11,10,0.1) 0%, rgba(9,11,10,0.55) 70%, var(--card) 100%)",
+          }}
+        />
+        <div className="absolute right-0 bottom-0 left-0 z-10 flex items-end justify-between gap-4 p-5 sm:p-6">
+          <div>
+            <h3
+              className={`display text-foreground drop-shadow ${compact ? "text-2xl" : "text-3xl"}`}
+            >
+              {selectedStory.title}
+            </h3>
+            <p className="mt-1 text-xs text-muted">{selectedStory.meta}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className={`flex flex-col gap-5 ${compact ? "p-4" : "p-6 sm:p-7"}`}>
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" className="btn btn-primary" onClick={onStart}>
+            {reading ? "Restart" : "Read to me"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onTogglePause}
+            disabled={!reading}
+          >
+            {paused ? "Resume" : "Pause"}
+          </button>
+          <button type="button" className="btn btn-ghost" onClick={onStop}>
+            Stop
+          </button>
+        </div>
+
+        <div className="border border-border bg-background/40 p-4">
+          <p className="mb-3 text-xs text-muted">
+            Narrator — tap to hear a sample
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              aria-pressed={prefs.voiceName == null}
+              className={`flex items-center gap-2 border py-1.5 pr-3 pl-1.5 text-sm transition-colors ${
+                prefs.voiceName == null
+                  ? "border-accent/50 bg-accent/10 text-foreground"
+                  : "border-border text-muted hover:text-foreground"
+              }`}
+              onClick={() => onChooseNarrator(null)}
+            >
+              <span
+                className={`flex h-7 w-7 items-center justify-center rounded-full border border-accent/40 bg-accent/10 transition-all ${
+                  prefs.voiceName == null ? "ring-2 ring-accent" : "opacity-75"
+                }`}
+              >
+                <IconMoon className="h-4 w-4 text-accent" />
+              </span>
+              Auto
+            </button>
+            {narrators.map((n) => (
+              <button
+                key={n.name}
+                type="button"
+                aria-pressed={prefs.voiceName === n.name}
+                className={`flex items-center gap-2 border py-1.5 pr-3 pl-1.5 text-sm transition-colors ${
+                  prefs.voiceName === n.name
+                    ? "border-accent/50 bg-accent/10 text-foreground"
+                    : "border-border text-muted hover:text-foreground"
+                }`}
+                onClick={() => onChooseNarrator(n.name)}
+              >
+                <span
+                  className={`inline-flex shrink-0 rounded-full transition-all ${
+                    prefs.voiceName === n.name
+                      ? "ring-2 ring-accent"
+                      : "opacity-75"
+                  }`}
+                >
+                  <NarratorAvatar
+                    name={n.name}
+                    gender={n.gender}
+                    className="block h-7 w-7 rounded-full"
+                  />
+                </span>
+                {n.label}
+                {n.tag !== "Standard" && (
+                  <span className="border border-accent/40 px-1.5 py-0.5 text-[10px] tracking-wide text-accent uppercase">
+                    {n.tag}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          {showEdgeTip && (
+            <p className="mt-3 text-xs text-muted">
+              Tip: on Windows, opening this app in{" "}
+              <span className="text-foreground">Microsoft Edge</span> unlocks
+              free natural-sounding narrator voices.
+            </p>
+          )}
+          <button
+            type="button"
+            className="mt-3 text-xs text-muted underline-offset-2 hover:text-foreground hover:underline"
+            onClick={onToggleAllVoices}
+          >
+            {showAllVoices
+              ? "Hide all voices"
+              : `All device voices (${allVoices.length})`}
+          </button>
+          {showAllVoices && (
+            <select
+              value={prefs.voiceName ?? ""}
+              onChange={(e) => onChooseNarrator(e.target.value || null)}
+              className="mt-2 w-full border border-border bg-card px-2 py-2 text-sm text-foreground outline-none"
+            >
+              <option value="">Auto — best available</option>
+              {allVoices.map((v) => (
+                <option key={v.name} value={v.name}>
+                  {v.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="border border-border bg-background/40 p-3">
+            <span className="mb-2 flex justify-between text-xs text-muted">
+              <span>Speed</span>
+              <span>
+                {prefs.rate < 0.66
+                  ? "Very slow"
+                  : prefs.rate < 0.78
+                    ? "Slow"
+                    : "Relaxed"}
+              </span>
+            </span>
+            <input
+              type="range"
+              min={0.55}
+              max={0.9}
+              step={0.01}
+              value={prefs.rate}
+              onChange={(e) =>
+                onUpdatePrefs({ rate: parseFloat(e.target.value) })
+              }
+            />
+          </label>
+          <label className="border border-border bg-background/40 p-3">
+            <span className="mb-2 flex justify-between text-xs text-muted">
+              <span>Warmth</span>
+              <span>
+                {prefs.pitch < 0.82
+                  ? "Warm"
+                  : prefs.pitch < 0.94
+                    ? "Gentle"
+                    : "Bright"}
+              </span>
+            </span>
+            <input
+              type="range"
+              min={0.72}
+              max={1.02}
+              step={0.01}
+              value={prefs.pitch}
+              onChange={(e) =>
+                onUpdatePrefs({ pitch: parseFloat(e.target.value) })
+              }
+            />
+          </label>
+        </div>
+
+        <div className="h-px bg-border">
+          <div
+            className="h-px bg-accent transition-[width] duration-500"
+            style={{ width: `${storyFill}%` }}
+          />
+        </div>
+        <div
+          className={`overflow-auto border border-border bg-background/50 p-5 text-[0.95rem] leading-[1.9] text-muted ${compact ? "max-h-[220px]" : "max-h-[280px]"}`}
+        >
+          {selectedStory.paras.map((p, i) => (
+            <p
+              key={i}
+              className={`mb-4 last:mb-0 ${i === paragraph ? "text-foreground" : ""}`}
+            >
+              {p}
+            </p>
+          ))}
+        </div>
+      </div>
+    </article>
   );
 }
