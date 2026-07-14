@@ -2,6 +2,8 @@
 
 Paste-ready. Sequence: publish the **article** first, then the **teaser post** drives traffic to it.
 
+**Published article:** https://www.linkedin.com/pulse/ai-action-2-from-idea-sleepcheck-weidong-shi-0fwrc
+
 Assets: this folder (`docs/linkedin-article/`).
 
 ---
@@ -9,8 +11,7 @@ Assets: this folder (`docs/linkedin-article/`).
 ## 1 · Teaser feed post (day 0 — distribution)
 
 *Plain text — LinkedIn posts don't render markdown.*  
-*Attach: `01-hero-player.png` (or `00-cover-og.png` if you prefer a simpler cover).*  
-*Also attach / link the published article so the pulse URL is in the post.*
+*Attach: `01-hero-player.png` (or `00-cover-og.png` if you prefer a simpler cover).*
 
 ```
 AI in Action #2 is live.
@@ -53,11 +54,10 @@ Series roadmap: https://github.com/weidong808/ai-in-action-roadmap
 
 ## 3 · Full article (LinkedIn Write article / pulse)
 
-Use `ARTICLE.md`.
+Published:
+https://www.linkedin.com/pulse/ai-action-2-from-idea-sleepcheck-weidong-shi-0fwrc
 
-- **Title:** AI in Action #2: From an Idea to SleepCheck
-- **Cover:** `00-cover-og.png`
-- Insert images at each `[IMAGE: …]` marker (see `PUBLISH.md`)
+Source draft: `ARTICLE.md` · Cover: `00-cover-og.png`
 
 ---
 
@@ -76,7 +76,7 @@ User experience → Application domain → Browser platform → Engineering plat
 
 Design decisions (no account, no backend in the critical path, on-device data, offline, one codebase) and honest trade-offs (no cloud sync, device voices vary, prefs stay local) are part of the architecture story—not an afterthought.
 
-Full write-up: [LINK]
+Full write-up: https://www.linkedin.com/pulse/ai-action-2-from-idea-sleepcheck-weidong-shi-0fwrc
 Live: https://sleepcheck.weidong-shi.com
 
 #SoftwareArchitecture #AIinAction #PWA
@@ -100,7 +100,7 @@ Neither side replaces the other.
 
 That's the distinction I'm building this series to demonstrate—app by app, domain by domain.
 
-Article: [LINK]
+Article: https://www.linkedin.com/pulse/ai-action-2-from-idea-sleepcheck-weidong-shi-0fwrc
 
 #AIinAction #EngineeringLeadership #AIAssistedDevelopment
 ```
@@ -110,13 +110,10 @@ Article: [LINK]
 ## Checklist
 
 - [x] Publish LinkedIn article from `ARTICLE.md`
-- [x] Copy pulse URL into teaser + first comment (`[LINK TO ARTICLE]` / `[LINK]`)
+- [x] Copy pulse URL into teaser + first comment + follow-ups
 - [ ] Post teaser with screenshot
 - [ ] Add first comment immediately
 - [x] Wire `externalUrl` on hub `articles.ts` once live
 - [ ] Optional: follow-ups on day 3–4 and 7–8
-
-Published article:
-https://www.linkedin.com/pulse/ai-action-2-from-idea-sleepcheck-weidong-shi-0fwrc
 
 Do not mention monetization, tiers, Stripe, or commercial roadmap in any of these posts.

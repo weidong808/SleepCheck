@@ -22,24 +22,24 @@ Site architecture figure: `weidong-website/public/images/sleepcheck/sleepcheck-a
 
 ## LinkedIn steps
 
-1. Publish the **article** first (`ARTICLE.md` + images).
-2. Then post the **teaser** from `LAUNCH-PACKAGE.md` §1 with `[LINK TO ARTICLE]` filled in.
+1. Article is published: https://www.linkedin.com/pulse/ai-action-2-from-idea-sleepcheck-weidong-shi-0fwrc
+2. Post the **teaser** from `LAUNCH-PACKAGE.md` §1 (URL already filled in).
 3. Immediately add the **first comment** (`LAUNCH-PACKAGE.md` §2).
 
-### Article upload
+### Article upload (already done)
 
 1. LinkedIn → **Write article** (pulse).
 2. Title: `AI in Action #2: From an Idea to SleepCheck`
 3. Set cover from `00-cover-og.png`.
 4. Paste body from `ARTICLE.md` (skip the metadata tables at the top).
 5. At each **`[IMAGE: …]`** marker, delete the marker line and **Insert image** from this folder. Keep the caption under the image.
-6. Publish, then copy the pulse URL into the teaser.
+6. Publish, then use the pulse URL in the teaser.
 
 **Note:** Product screenshots (`01`–`04`) are retina (~2MB). If upload is slow, resize to 50% width before inserting.
 
 ## After publish
 
-Set `externalUrl` on the SleepCheck entry in `weidong-website/src/content/articles.ts`.
+`externalUrl` is already set on the SleepCheck entry in `weidong-website/src/content/articles.ts`.
 
 ## Do not include
 
