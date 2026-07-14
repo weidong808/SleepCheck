@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -6,7 +6,18 @@ import { soundIcon } from "@/components/Icons";
 import { BREATH_MODES } from "@/lib/breath";
 import { APP_NAME, SITE_HOME_URL } from "@/lib/brand";
 import { audioEngine } from "@/lib/audioEngine";
+import {
+  PRESETS,
+  buildShareUrl,
+  decodeMix,
+  mixLabel,
+} from "@/lib/presets";
 import { SOUNDS } from "@/lib/sounds";
+import {
+  type StreakStats,
+  getStreakStats,
+  recordNight,
+} from "@/lib/streaks";
 import {
   cancelSpeech,
   pauseSpeech,
@@ -36,6 +47,10 @@ export function SleepApp() {
   const [breathBig, setBreathBig] = useState(false);
   const [timerLeft, setTimerLeft] = useState<number | null>(null);
   const [timerTotal, setTimerTotal] = useState(0);
+  const [customMins, setCustomMins] = useState("");
+  const [sharedMix, setSharedMix] = useState<Record<string, number> | null>(null);
+  const [shareNote, setShareNote] = useState<string | null>(null);
+  const [streak, setStreak] = useState<StreakStats | null>(null);
 
   const readingRef = useRef(false);
   const paragraphRef = useRef(-1);
@@ -58,7 +73,24 @@ export function SleepApp() {
     // Defer to avoid sync setState-in-effect lint on hydration bootstrap.
     const t = window.setTimeout(() => {
       setPrefs({ ...loaded, sounds });
+      setStreak(getStreakStats());
+
+      // Shared mix or preset arriving via URL (?mix=rain:0.4,fire:0.3 | ?preset=rainy-cabin).
+      const params = new URLSearchParams(window.location.search);
+      const rawMix = params.get("mix");
+      const presetId = params.get("preset");
+      if (rawMix) {
+        setSharedMix(decodeMix(rawMix));
+      } else if (presetId) {
+        const p = PRESETS.find((x) => x.id === presetId);
+        if (p) setSharedMix(p.mix);
+      }
     }, 0);
+
+    if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+
     return () => window.clearTimeout(t);
   }, []);
 
@@ -82,6 +114,11 @@ export function SleepApp() {
 
   const updatePrefs = useCallback((patch: Partial<SleepPreferences>) => {
     setPrefs((prev) => (prev ? { ...prev, ...patch } : prev));
+  }, []);
+
+  /** Count tonight toward the wind-down streak. */
+  const markWindDown = useCallback(() => {
+    setStreak(recordNight());
   }, []);
 
   const activeSounds = useMemo(() => {
@@ -112,6 +149,49 @@ export function SleepApp() {
       ? "Soundscape is gently playing."
       : "Tap rain, ocean, or a story to begin.";
 
+  // Lock-screen / media-key controls while the soundscape plays.
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    const ms = navigator.mediaSession;
+    const playing = reading || activeSounds.length > 0;
+    if (!playing) {
+      ms.playbackState = "none";
+      ms.metadata = null;
+      return;
+    }
+    ms.metadata = new MediaMetadata({
+      title: nowTitle,
+      artist: APP_NAME,
+      artwork: [
+        { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+        { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
+    });
+    ms.playbackState = "playing";
+    try {
+      ms.setActionHandler("pause", () => {
+        audioEngine.suspend();
+        pauseSpeech();
+        ms.playbackState = "paused";
+      });
+      ms.setActionHandler("play", () => {
+        audioEngine.resume();
+        resumeSpeech();
+        ms.playbackState = "playing";
+      });
+    } catch {
+      // Some browsers reject unsupported handlers.
+    }
+    return () => {
+      try {
+        ms.setActionHandler("pause", null);
+        ms.setActionHandler("play", null);
+      } catch {
+        /* noop */
+      }
+    };
+  }, [reading, activeSounds, nowTitle]);
+
   const toggleSound = (id: string) => {
     if (!prefs) return;
     const def = SOUNDS.find((s) => s.id === id);
@@ -122,9 +202,60 @@ export function SleepApp() {
       ...prefs.sounds,
       [id]: { ...current, active: nextActive },
     };
-    if (nextActive) audioEngine.start(id, def.type, current.vol);
-    else audioEngine.stop(id);
+    if (nextActive) {
+      audioEngine.start(id, def.type, current.vol);
+      markWindDown();
+    } else {
+      audioEngine.stop(id);
+    }
     updatePrefs({ sounds: nextSounds });
+  };
+
+  /** Replace the current soundscape with a preset / shared mix. */
+  const applyMix = (mix: Record<string, number>) => {
+    if (!prefs) return;
+    audioEngine.stopAll();
+    const nextSounds: Record<string, SoundState> = { ...prefs.sounds };
+    for (const id of Object.keys(nextSounds)) {
+      nextSounds[id] = { ...nextSounds[id], active: false };
+    }
+    for (const [id, vol] of Object.entries(mix)) {
+      const def = SOUNDS.find((s) => s.id === id);
+      if (!def) continue;
+      nextSounds[id] = { active: true, vol };
+      audioEngine.start(id, def.type, vol);
+    }
+    updatePrefs({ sounds: nextSounds, tab: "sounds" });
+    markWindDown();
+  };
+
+  const shareMix = async () => {
+    if (!prefs) return;
+    const mix: Record<string, number> = {};
+    for (const s of SOUNDS) {
+      const st = prefs.sounds[s.id];
+      if (st?.active) mix[s.id] = st.vol;
+    }
+    if (!Object.keys(mix).length) return;
+    const url = buildShareUrl(mix);
+    const title = `${APP_NAME} mix: ${mixLabel(mix)}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, url });
+        setShareNote("Shared");
+      } else {
+        await navigator.clipboard.writeText(url);
+        setShareNote("Link copied");
+      }
+    } catch {
+      try {
+        await navigator.clipboard.writeText(url);
+        setShareNote("Link copied");
+      } catch {
+        setShareNote(null);
+      }
+    }
+    window.setTimeout(() => setShareNote(null), 2500);
   };
 
   const setSoundVol = (id: string, vol: number) => {
@@ -185,6 +316,7 @@ export function SleepApp() {
     setReading(true);
     setPaused(false);
     setParagraph(0);
+    markWindDown();
     readNextRef.current();
   };
 
@@ -239,6 +371,7 @@ export function SleepApp() {
     };
     apply();
     setBreathRunning(true);
+    markWindDown();
     breathTimerRef.current = window.setInterval(() => {
       left -= 1;
       if (left <= 0) {
@@ -344,6 +477,38 @@ export function SleepApp() {
           </div>
         </header>
 
+        {sharedMix && (
+          <div className="panel mb-8 flex flex-wrap items-center justify-between gap-4 border-accent/40 p-5">
+            <div>
+              <p className="section-label">A sleep mix was shared with you</p>
+              <p className="mt-2 text-lg text-foreground">{mixLabel(sharedMix)}</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  applyMix(sharedMix);
+                  setSharedMix(null);
+                  window.history.replaceState(null, "", window.location.pathname);
+                }}
+              >
+                Play this mix
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => {
+                  setSharedMix(null);
+                  window.history.replaceState(null, "", window.location.pathname);
+                }}
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
+
         <section className="mb-10 grid gap-6 lg:grid-cols-[1.35fr_0.85fr]">
           <div className="panel relative overflow-hidden p-8 sm:p-10">
             <div
@@ -390,15 +555,35 @@ export function SleepApp() {
               <p className="mt-3 text-sm leading-relaxed text-muted">{nowSub}</p>
             </div>
             <div className="mt-8 flex items-end justify-between gap-4 border-t border-border pt-5">
-              <div>
-                <p className="section-label">Active layers</p>
-                <p className="mt-2 text-2xl text-foreground">
-                  {activeSounds.length}
-                </p>
+              <div className="flex gap-8">
+                <div>
+                  <p className="section-label">Active layers</p>
+                  <p className="mt-2 text-2xl text-foreground">
+                    {activeSounds.length}
+                  </p>
+                </div>
+                <div>
+                  <p className="section-label">Night streak</p>
+                  <p className="mt-2 text-2xl text-foreground">
+                    {streak?.current ?? 0}
+                    {streak && streak.best > 1 && (
+                      <span className="ml-2 text-xs text-muted">
+                        best {streak.best}
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
-              <button type="button" className="btn btn-secondary" onClick={stopAllAudio}>
-                Stop all
-              </button>
+              <div className="flex flex-col items-end gap-2">
+                {activeSounds.length > 0 && (
+                  <button type="button" className="btn btn-secondary" onClick={shareMix}>
+                    {shareNote ?? "Share mix"}
+                  </button>
+                )}
+                <button type="button" className="btn btn-secondary" onClick={stopAllAudio}>
+                  Stop all
+                </button>
+              </div>
             </div>
           </aside>
         </section>
@@ -431,6 +616,22 @@ export function SleepApp() {
                 Generated in your browser with the Web Audio API — nothing is
                 streamed from a server.
               </p>
+            </div>
+            <div className="mb-8">
+              <p className="section-label mb-3">One-tap scenes</p>
+              <div className="flex flex-wrap gap-2">
+                {PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className="border border-border px-3 py-2 text-left text-sm text-muted transition-colors hover:border-accent/50 hover:text-foreground"
+                    onClick={() => applyMix(p.mix)}
+                    title={p.desc}
+                  >
+                    {p.name}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {SOUNDS.map((s) => {
@@ -686,6 +887,35 @@ export function SleepApp() {
                 </button>
               ))}
             </div>
+            <form
+              className="mt-3 flex flex-wrap items-center gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const m = parseInt(customMins, 10);
+                if (Number.isFinite(m) && m >= 1 && m <= 480) {
+                  startTimer(m);
+                  setCustomMins("");
+                }
+              }}
+            >
+              <label className="flex items-center gap-3 border border-border bg-card px-4 py-3">
+                <span className="text-xs text-muted">Custom</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={480}
+                  value={customMins}
+                  onChange={(e) => setCustomMins(e.target.value)}
+                  placeholder={String(prefs.lastTimerMinutes)}
+                  className="w-20 bg-transparent text-lg text-foreground outline-none [appearance:textfield]"
+                  aria-label="Custom timer minutes"
+                />
+                <span className="text-xs text-muted">min</span>
+              </label>
+              <button type="submit" className="btn btn-secondary">
+                Start
+              </button>
+            </form>
             {timerLeft != null && (
               <div className="panel mt-4 flex flex-wrap items-center justify-between gap-4 p-5">
                 <div>

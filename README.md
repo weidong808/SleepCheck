@@ -8,10 +8,14 @@ Calm wind-down companion: gentle soundscapes, bedtime stories, guided breathing,
 
 | Feature | How it works |
 |--------|----------------|
-| Sounds | Browser **Web Audio** synthesis (no streamed audio files) |
-| Stories | Hand-written stories + device **speechSynthesis** TTS |
+| Sounds | Browser **Web Audio** synthesis — 10 soundscapes incl. fireplace, wind, creek, crickets (no streamed audio files) |
+| Scenes | One-tap presets (Rainy Cabin, Moonlit Shore, …) |
+| Share | Shareable mix links (`?mix=rain:0.40,fire:0.34`) via Web Share API / clipboard |
+| Stories | 5 hand-written stories + device **speechSynthesis** TTS |
 | Breathe | Local guided breathing modes |
-| Timer | Fade-to-silence sleep timer |
+| Timer | Fade-to-silence sleep timer, quick picks + custom minutes |
+| Streak | Local-only nightly wind-down streak (a night spans until 5am) |
+| PWA | Installable, offline app shell, lock-screen media controls |
 | Preferences | **localStorage only** — no login, no cloud DB |
 
 ## What V1 is not

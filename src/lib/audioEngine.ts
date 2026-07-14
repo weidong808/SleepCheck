@@ -1,4 +1,14 @@
-type SoundType = "rain" | "ocean" | "brown" | "pink" | "white" | "binaural";
+type SoundType =
+  | "rain"
+  | "ocean"
+  | "brown"
+  | "pink"
+  | "white"
+  | "binaural"
+  | "fire"
+  | "wind"
+  | "crickets"
+  | "stream";
 
 type ActiveNode = {
   out: GainNode;
@@ -102,6 +112,56 @@ export class AudioEngine {
     return s;
   }
 
+  /** Sparse exponentially-decaying noise bursts — fire crackle bed. */
+  private crackleBuffer() {
+    const sr = this.ctx!.sampleRate;
+    const n = 10 * sr;
+    const b = this.ctx!.createBuffer(1, n, sr);
+    const d = b.getChannelData(0);
+    const pops = 46;
+    for (let p = 0; p < pops; p++) {
+      const at = Math.floor(Math.random() * (n - sr * 0.06));
+      const len = Math.floor(sr * (0.006 + Math.random() * 0.045));
+      const amp = 0.12 + Math.random() * 0.5;
+      for (let i = 0; i < len; i++) {
+        const env = Math.exp((-5 * i) / len);
+        d[at + i] += (Math.random() * 2 - 1) * amp * env;
+      }
+    }
+    return b;
+  }
+
+  /** Amplitude-pulsed high sine chirps — distant summer crickets. */
+  private cricketBuffer() {
+    const sr = this.ctx!.sampleRate;
+    const n = 12 * sr;
+    const b = this.ctx!.createBuffer(1, n, sr);
+    const d = b.getChannelData(0);
+    let t = 0.4 * sr;
+    while (t < n - sr) {
+      const chirps = 3 + Math.floor(Math.random() * 3);
+      const freq = 4100 + Math.random() * 500;
+      for (let c = 0; c < chirps; c++) {
+        const len = Math.floor(sr * 0.055);
+        for (let i = 0; i < len && t + i < n; i++) {
+          const env = Math.sin((Math.PI * i) / len);
+          d[Math.floor(t) + i] +=
+            Math.sin((2 * Math.PI * freq * i) / sr) * env * 0.32;
+        }
+        t += sr * 0.085;
+      }
+      t += sr * (0.5 + Math.random() * 1.4);
+    }
+    return b;
+  }
+
+  private customSrc(make: () => AudioBuffer) {
+    const s = this.ctx!.createBufferSource();
+    s.buffer = make();
+    s.loop = true;
+    return s;
+  }
+
   start(id: string, type: SoundType, vol: number) {
     this.boot();
     this.stop(id, true);
@@ -139,6 +199,58 @@ export class AudioEngine {
       add(a);
       add(b);
       add(l);
+    } else if (type === "fire") {
+      const bed = this.src("brown");
+      const crackle = this.customSrc(() => this.crackleBuffer());
+      bed.connect(this.filter("lowpass", 320)).connect(this.gain(0.5)).connect(out);
+      crackle
+        .connect(this.filter("bandpass", 2400, 0.7))
+        .connect(this.gain(0.5))
+        .connect(out);
+      add(bed);
+      add(crackle);
+    } else if (type === "wind") {
+      const a = this.src("pink");
+      const bp = this.filter("bandpass", 380, 0.45);
+      const wob = this.ctx!.createOscillator();
+      const wobAmt = this.gain(160);
+      wob.frequency.value = 0.07;
+      wob.connect(wobAmt);
+      wobAmt.connect(bp.frequency);
+      const swellGain = this.gain(0.62);
+      const swell = this.ctx!.createOscillator();
+      const swellAmt = this.gain(0.2);
+      swell.frequency.value = 0.05;
+      swell.connect(swellAmt);
+      swellAmt.connect(swellGain.gain);
+      a.connect(bp).connect(swellGain).connect(out);
+      add(a);
+      add(wob);
+      add(swell);
+    } else if (type === "crickets") {
+      const chirps = this.customSrc(() => this.cricketBuffer());
+      const bed = this.src("pink");
+      chirps
+        .connect(this.filter("highpass", 2800, 0.6))
+        .connect(this.gain(0.7))
+        .connect(out);
+      bed.connect(this.filter("lowpass", 480)).connect(this.gain(0.14)).connect(out);
+      add(chirps);
+      add(bed);
+    } else if (type === "stream") {
+      const a = this.src("white");
+      const b = this.src("brown");
+      const ripple = this.filter("bandpass", 1500, 0.55);
+      const lfo = this.ctx!.createOscillator();
+      const lfoAmt = this.gain(240);
+      lfo.frequency.value = 0.21;
+      lfo.connect(lfoAmt);
+      lfoAmt.connect(ripple.frequency);
+      a.connect(ripple).connect(this.gain(0.3)).connect(out);
+      b.connect(this.filter("lowpass", 420)).connect(this.gain(0.34)).connect(out);
+      add(a);
+      add(b);
+      add(lfo);
     } else if (type === "binaural") {
       const m = this.ctx!.createChannelMerger(2);
       const lo = this.ctx!.createOscillator();
@@ -209,6 +321,18 @@ export class AudioEngine {
   fadeTo(v: number, d: number) {
     if (!this.master || !this.ctx) return;
     this.master.gain.linearRampToValueAtTime(v, this.ctx.currentTime + d);
+  }
+
+  suspend() {
+    void this.ctx?.suspend();
+  }
+
+  resume() {
+    void this.ctx?.resume();
+  }
+
+  get running() {
+    return this.ctx?.state === "running" && Object.keys(this.nodes).length > 0;
   }
 }
 
