@@ -11,7 +11,7 @@ import {
   soundIcon,
 } from "@/components/Icons";
 import { BREATH_MODES } from "@/lib/breath";
-import { APP_NAME } from "@/lib/brand";
+import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
 import { audioEngine } from "@/lib/audioEngine";
 import {
   PRESETS,
@@ -83,6 +83,8 @@ export function SleepApp() {
   const sleepTimerRef = useRef<number | null>(null);
   const readNextRef = useRef<() => void>(() => {});
   const preloadedRef = useRef(false);
+  const timerLeftRef = useRef<number | null>(null);
+  const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
 
   useEffect(() => {
     const loaded = loadPreferences();
@@ -286,6 +288,10 @@ export function SleepApp() {
     setParagraph(-1);
     paragraphRef.current = -1;
     cancelSpeech();
+    // Un-duck the ambience — unless the sleep timer owns the fade right now.
+    if (timerLeftRef.current == null || timerLeftRef.current > 61) {
+      audioEngine.fadeTo(0.82, 1.5);
+    }
   }, []);
 
   const stopAllAudio = useCallback(() => {
@@ -383,6 +389,10 @@ export function SleepApp() {
     setPaused(false);
     setParagraph(0);
     markWindDown();
+    // Duck the soundscape so the narrator sits clearly on top.
+    if (timerLeftRef.current == null || timerLeftRef.current > 61) {
+      audioEngine.fadeTo(0.38, 1.2);
+    }
     readNextRef.current();
   };
 
@@ -435,6 +445,8 @@ export function SleepApp() {
     setBreathPhase("Ready");
     setBreathCount(4);
     setBreathBig(false);
+    void wakeLockRef.current?.release().catch(() => {});
+    wakeLockRef.current = null;
   };
 
   const startBreath = () => {
@@ -457,6 +469,17 @@ export function SleepApp() {
     apply();
     setBreathRunning(true);
     markWindDown();
+    // Keep the screen awake while the person follows the visual guide.
+    if ("wakeLock" in navigator) {
+      (navigator as Navigator & {
+        wakeLock: { request: (t: "screen") => Promise<{ release: () => Promise<void> }> };
+      }).wakeLock
+        .request("screen")
+        .then((s) => {
+          wakeLockRef.current = s;
+        })
+        .catch(() => {});
+    }
     breathTimerRef.current = window.setInterval(() => {
       left -= 1;
       if (left <= 0) {
@@ -474,30 +497,44 @@ export function SleepApp() {
       sleepTimerRef.current = null;
     }
     setTimerLeft(null);
+    timerLeftRef.current = null;
   };
 
   const startTimer = (mins: number) => {
     clearSleepTimer();
     const total = mins * 60;
     setTimerLeft(total);
+    timerLeftRef.current = total;
     updatePrefs({ lastTimerMinutes: mins });
     let left = total;
     sleepTimerRef.current = window.setInterval(() => {
       left -= 1;
       setTimerLeft(left);
+      timerLeftRef.current = left;
       if (left === 60) audioEngine.fadeTo(0, 56);
       if (left <= 0) {
         clearSleepTimer();
         stopAllAudio();
-        audioEngine.fadeTo(0.82, 0.5);
+        // Restore master volume only after node-level fades finish,
+        // so nothing blips back in audibly after the timer ends.
+        window.setTimeout(() => audioEngine.fadeTo(0.82, 0.5), 1600);
       }
     }, 1000);
   };
 
   const cancelTimer = () => {
     clearSleepTimer();
-    audioEngine.fadeTo(0.82, 2);
+    audioEngine.fadeTo(reading ? 0.38 : 0.82, 2);
   };
+
+  // Countdown in the tab title so the timer is visible from anywhere.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.title =
+      timerLeft != null
+        ? `${Math.floor(timerLeft / 60)}:${String(timerLeft % 60).padStart(2, "0")} · ${APP_NAME}`
+        : `${APP_NAME} — ${APP_TAGLINE}`;
+  }, [timerLeft]);
 
   if (!prefs) {
     return (
@@ -672,7 +709,9 @@ export function SleepApp() {
               </>
             ) : (
               <>
-                <span className="font-mono text-lg text-foreground">{timerLabel}</span>
+                <span role="timer" className="font-mono text-lg text-foreground">
+                  {timerLabel}
+                </span>
                 <span className="text-xs text-muted">
                   {timerLeft <= 60 ? "fading to silence…" : "until fade-out"}
                 </span>
@@ -718,6 +757,7 @@ export function SleepApp() {
                   <button
                     key={p.id}
                     type="button"
+                    aria-pressed={isActive}
                     className={`relative h-36 overflow-hidden border text-left transition-all sm:h-40 ${
                       isActive
                         ? "border-accent/60"
@@ -783,6 +823,7 @@ export function SleepApp() {
                     >
                       <button
                         type="button"
+                        aria-pressed={active}
                         className="flex min-w-0 flex-1 items-center gap-3 text-left"
                         onClick={() => toggleSound(s.id)}
                       >
@@ -923,6 +964,7 @@ export function SleepApp() {
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
+                      aria-pressed={prefs.voiceName == null}
                       className={`flex items-center gap-2 border py-1.5 pr-3 pl-1.5 text-sm transition-colors ${
                         prefs.voiceName == null
                           ? "border-accent/50 bg-accent/10 text-foreground"
@@ -945,6 +987,7 @@ export function SleepApp() {
                       <button
                         key={n.name}
                         type="button"
+                        aria-pressed={prefs.voiceName === n.name}
                         className={`flex items-center gap-2 border py-1.5 pr-3 pl-1.5 text-sm transition-colors ${
                           prefs.voiceName === n.name
                             ? "border-accent/50 bg-accent/10 text-foreground"
@@ -1107,6 +1150,7 @@ export function SleepApp() {
             </div>
             <div className="flex min-h-[260px] items-center justify-center border border-border bg-background/40">
               <div
+                aria-live="polite"
                 className={`flex h-36 w-36 flex-col items-center justify-center border border-border transition-transform duration-[4000ms] ease-in-out ${
                   breathBig ? "scale-125 border-accent/40" : "scale-100"
                 }`}
