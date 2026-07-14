@@ -32,6 +32,13 @@ const PREFERRED_NAMES = [
   "Ryan",
 ];
 
+/** Warm default when no natural/enhanced voice exists (e.g. Chrome). */
+const FALLBACK_VOICE = /google uk english female/i;
+
+function isCharming(name: string): boolean {
+  return /natural|neural|enhanced|premium|siri/i.test(name);
+}
+
 function quality(v: SpeechSynthesisVoice): number {
   let q = 0;
   if (/natural|neural/i.test(v.name)) q += 6;
@@ -39,6 +46,7 @@ function quality(v: SpeechSynthesisVoice): number {
   if (PREFERRED_NAMES.some((n) => v.name.includes(n))) q += 2;
   if (/^en/i.test(v.lang)) q += 1;
   if (/google/i.test(v.name)) q -= 1; // Google voices cut off long utterances
+  if (FALLBACK_VOICE.test(v.name)) q += 3; // …but UK Female is the warmest standard voice
   return q;
 }
 
@@ -91,7 +99,7 @@ export function listNarrators(max = 6): Narrator[] {
 
 /** True if this device exposes at least one natural/neural voice. */
 export function hasNaturalVoice(): boolean {
-  return listVoices().some((v) => /natural|neural|enhanced|premium|siri/i.test(v.name));
+  return listVoices().some((v) => isCharming(v.name));
 }
 
 export function pickVoice(preferredName?: string | null): SpeechSynthesisVoice | null {
@@ -103,7 +111,14 @@ export function pickVoice(preferredName?: string | null): SpeechSynthesisVoice |
     const exact = cachedVoices.find((v) => v.name === preferredName);
     if (exact) return exact;
   }
-  return listVoices()[0] ?? cachedVoices[0] ?? null;
+  const ranked = listVoices();
+  const best = ranked[0];
+  // Auto mode: prefer genuinely charming voices; otherwise fall back to
+  // Google UK English Female — the warmest of the standard voices.
+  if (best && isCharming(best.name)) return best;
+  const ukFemale = ranked.find((v) => FALLBACK_VOICE.test(v.name));
+  if (ukFemale) return ukFemale;
+  return best ?? cachedVoices[0] ?? null;
 }
 
 export type SpeakOpts = {
