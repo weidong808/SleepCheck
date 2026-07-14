@@ -712,31 +712,42 @@ export function SleepApp() {
           <section>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {PRESETS.map((p) => {
-                const Icon = soundIcon(p.icon);
                 const isActive = activePreset === p.id;
                 return (
                   <button
                     key={p.id}
                     type="button"
-                    className={`sound-card text-left transition-colors ${
-                      isActive ? "active" : ""
+                    className={`relative h-36 overflow-hidden border text-left transition-all sm:h-40 ${
+                      isActive
+                        ? "border-accent/60"
+                        : "border-border hover:border-foreground/30"
                     }`}
                     onClick={() => (isActive ? stopAllAudio() : applyMix(p.mix, p.id))}
                   >
-                    <span className="flex items-start justify-between gap-3">
-                      <span className="flex h-10 w-10 items-center justify-center border border-border text-muted">
-                        <Icon className="h-5 w-5" />
+                    <span
+                      aria-hidden
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${p.image})` }}
+                    />
+                    <span
+                      aria-hidden
+                      className="absolute inset-0"
+                      style={{
+                        background:
+                          "linear-gradient(180deg, rgba(9,11,10,0.05) 0%, rgba(9,11,10,0.35) 55%, rgba(9,11,10,0.82) 100%)",
+                      }}
+                    />
+                    <span className="relative z-10 flex h-full flex-col justify-end p-4">
+                      <span className="display block text-xl leading-tight text-foreground">
+                        {p.name}
                       </span>
-                      <span
-                        className={`mt-1 h-2 w-2 rounded-full ${
-                          isActive ? "bg-accent" : "bg-border"
-                        }`}
-                      />
+                      <span className="mt-1 block text-xs text-muted">{p.desc}</span>
                     </span>
-                    <span className="mt-3 block text-base font-medium text-foreground">
-                      {p.name}
-                    </span>
-                    <span className="mt-1 block text-sm text-muted">{p.desc}</span>
+                    <span
+                      className={`absolute top-3 right-3 z-10 h-2 w-2 rounded-full ${
+                        isActive ? "bg-accent" : "bg-border"
+                      }`}
+                    />
                   </button>
                 );
               })}

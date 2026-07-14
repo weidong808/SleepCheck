@@ -1,5 +1,5 @@
-// SleepCheck service worker — offline app shell + ambience + story art.
-const CACHE = "sleepcheck-v3";
+// SleepCheck service worker — offline app shell + ambience + scene art.
+const CACHE = "sleepcheck-v4";
 const SHELL = [
   "/",
   "/about",
@@ -10,6 +10,12 @@ const SHELL = [
   "/stories/cottage.svg",
   "/stories/train.svg",
   "/stories/garden.svg",
+  "/scenes/rainy-cabin.svg",
+  "/scenes/moonlit-shore.svg",
+  "/scenes/summer-meadow.svg",
+  "/scenes/creekside.svg",
+  "/scenes/deep-hush.svg",
+  "/scenes/storm-shelter.svg",
 ];
 
 self.addEventListener("install", (event) => {

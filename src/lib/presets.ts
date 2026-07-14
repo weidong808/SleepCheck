@@ -5,6 +5,7 @@ export type Preset = {
   name: string;
   desc: string;
   icon: string;
+  image: string;
   mix: Record<string, number>; // soundId -> volume
 };
 
@@ -14,6 +15,7 @@ export const PRESETS: Preset[] = [
     name: "Rainy Cabin",
     desc: "Rain on the roof, fire in the hearth",
     icon: "Rain",
+    image: "/scenes/rainy-cabin.svg",
     mix: { rain: 0.5, fire: 0.42 },
   },
   {
@@ -21,6 +23,7 @@ export const PRESETS: Preset[] = [
     name: "Moonlit Shore",
     desc: "Slow waves and a soft night wind",
     icon: "Ocean",
+    image: "/scenes/moonlit-shore.svg",
     mix: { ocean: 0.55, wind: 0.26 },
   },
   {
@@ -28,6 +31,7 @@ export const PRESETS: Preset[] = [
     name: "Summer Meadow",
     desc: "Crickets, breeze, and a far-off creek",
     icon: "Cricket",
+    image: "/scenes/summer-meadow.svg",
     mix: { crickets: 0.38, wind: 0.22, stream: 0.2 },
   },
   {
@@ -35,6 +39,7 @@ export const PRESETS: Preset[] = [
     name: "Creekside",
     desc: "Water over stones under night wind",
     icon: "Stream",
+    image: "/scenes/creekside.svg",
     mix: { stream: 0.5, wind: 0.2 },
   },
   {
@@ -42,6 +47,7 @@ export const PRESETS: Preset[] = [
     name: "Deep Hush",
     desc: "Brown noise with a theta drift",
     icon: "Brown",
+    image: "/scenes/deep-hush.svg",
     mix: { brown: 0.34, theta: 0.14 },
   },
   {
@@ -49,6 +55,7 @@ export const PRESETS: Preset[] = [
     name: "Storm Shelter",
     desc: "Heavy rain, wind, and warm cover",
     icon: "Wind",
+    image: "/scenes/storm-shelter.svg",
     mix: { rain: 0.58, wind: 0.34, brown: 0.16 },
   },
 ];

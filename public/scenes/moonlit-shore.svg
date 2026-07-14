@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f1726"/>
+      <stop offset="0.55" stop-color="#0c1420"/>
+      <stop offset="1" stop-color="#0a0f16"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f1a2a"/>
+      <stop offset="1" stop-color="#090d13"/>
+    </linearGradient>
+    <radialGradient id="mg" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#eae9d4" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#eae9d4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#sky)"/>
+  <!-- low large moon -->
+  <circle cx="580" cy="150" r="170" fill="url(#mg)"/>
+  <circle cx="580" cy="150" r="52" fill="#eae9d4" opacity="0.9"/>
+  <circle cx="565" cy="138" r="8" fill="#d5d4bd" opacity="0.5"/>
+  <circle cx="596" cy="164" r="6" fill="#d5d4bd" opacity="0.4"/>
+  <!-- stars -->
+  <g fill="#cfd6cf">
+    <circle cx="80" cy="55" r="1.4" opacity="0.7"/><circle cx="170" cy="110" r="1.1" opacity="0.5"/>
+    <circle cx="280" cy="60" r="1.3" opacity="0.6"/><circle cx="380" cy="100" r="1.1" opacity="0.5"/>
+    <circle cx="720" cy="60" r="1.3" opacity="0.6"/><circle cx="60" cy="160" r="1.2" opacity="0.5"/>
+  </g>
+  <!-- sea -->
+  <rect y="250" width="800" height="160" fill="url(#sea)"/>
+  <!-- long moon shimmer -->
+  <g stroke="#eae9d4" stroke-linecap="round">
+    <line x1="545" y1="262" x2="615" y2="262" stroke-width="3" opacity="0.4"/>
+    <line x1="530" y1="280" x2="628" y2="280" stroke-width="2.5" opacity="0.3"/>
+    <line x1="548" y1="300" x2="640" y2="300" stroke-width="2.5" opacity="0.24"/>
+    <line x1="520" y1="325" x2="655" y2="325" stroke-width="2" opacity="0.18"/>
+    <line x1="540" y1="355" x2="665" y2="355" stroke-width="2" opacity="0.13"/>
+    <line x1="510" y1="390" x2="680" y2="390" stroke-width="2" opacity="0.09"/>
+  </g>
+  <!-- wave lines -->
+  <g stroke="#2c4157" stroke-width="1.5" fill="none" opacity="0.55">
+    <path d="M40 285 Q90 279 140 285 T240 285"/>
+    <path d="M120 330 Q180 324 240 330 T360 330"/>
+    <path d="M60 375 Q130 369 200 375 T340 375"/>
+  </g>
+  <!-- foam edge -->
+  <path d="M0 408 Q200 396 420 406 T800 400" stroke="#a9bfb4" stroke-width="2" fill="none" opacity="0.25"/>
+  <!-- dunes -->
+  <path fill="#12100c" d="M0 500 L0 430 Q220 408 460 424 Q640 436 800 420 L800 500 Z"/>
+  <!-- dune grass -->
+  <g stroke="#1e2418" stroke-width="2" stroke-linecap="round" fill="none">
+    <path d="M90 470 q-4 -22 -14 -32"/><path d="M98 470 q0 -24 6 -34"/><path d="M106 470 q6 -18 16 -26"/>
+    <path d="M660 462 q-4 -22 -14 -32"/><path d="M668 462 q0 -24 6 -34"/><path d="M676 462 q6 -18 16 -26"/>
+    <path d="M380 486 q-4 -20 -12 -28"/><path d="M388 486 q2 -22 8 -30"/>
+  </g>
+</svg>
