@@ -18,7 +18,7 @@
 
   <text x="80" y="72" fill="#f3f5f8" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700">Reference Architecture</text>
   <text x="80" y="112" fill="#9aa7bd" font-family="Segoe UI, Arial, sans-serif" font-size="20">Local-first Progressive Web App</text>
-  <text x="1520" y="72" text-anchor="end" fill="#3ecf8e" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="2">AI IN ACTION � SLEEPCHECK</text>
+  <text x="1520" y="72" text-anchor="end" fill="#3ecf8e" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="2">AI IN ACTION · SLEEPCHECK</text>
 
   <!-- Layer 1: User Experience -->
   <rect x="80" y="150" width="1440" height="120" rx="18" fill="url(#card)" stroke="#3ecf8e" stroke-width="2"/>
@@ -96,21 +96,21 @@
   <rect x="80" y="820" width="700" height="220" rx="18" fill="url(#layerAccent)" stroke="#3ecf8e" stroke-width="2"/>
   <text x="110" y="862" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Design Decisions</text>
   <g font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#e8eef8">
-    <text x="110" y="908"><tspan fill="#3ecf8e" font-weight="700"></tspan>  No account required</text>
-    <text x="110" y="942"><tspan fill="#3ecf8e" font-weight="700"></tspan>  No backend in the critical path</text>
-    <text x="110" y="976"><tspan fill="#3ecf8e" font-weight="700"></tspan>  Data remains on-device</text>
-    <text x="110" y="1010"><tspan fill="#3ecf8e" font-weight="700"></tspan>  Offline capable</text>
-    <text x="430" y="908"><tspan fill="#3ecf8e" font-weight="700"></tspan>  One codebase</text>
+    <text x="110" y="908"><tspan fill="#3ecf8e" font-weight="700">✓</tspan>  No account required</text>
+    <text x="110" y="942"><tspan fill="#3ecf8e" font-weight="700">✓</tspan>  No backend in the critical path</text>
+    <text x="110" y="976"><tspan fill="#3ecf8e" font-weight="700">✓</tspan>  Data remains on-device</text>
+    <text x="110" y="1010"><tspan fill="#3ecf8e" font-weight="700">✓</tspan>  Offline capable</text>
+    <text x="430" y="908"><tspan fill="#3ecf8e" font-weight="700">✓</tspan>  One codebase</text>
   </g>
 
   <!-- Trade-offs -->
   <rect x="820" y="820" width="700" height="220" rx="18" fill="url(#layerAccent)" stroke="#5a6d88" stroke-width="2"/>
   <text x="850" y="862" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Trade-offs</text>
   <g font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#e8eef8">
-    <text x="850" y="908"><tspan fill="#c07070" font-weight="700">�</tspan>  No cloud synchronization</text>
-    <text x="850" y="942"><tspan fill="#c07070" font-weight="700">�</tspan>  Device voices vary</text>
-    <text x="850" y="976"><tspan fill="#c07070" font-weight="700">�</tspan>  Preferences stay on one device</text>
+    <text x="850" y="908"><tspan fill="#c07070" font-weight="700">×</tspan>  No cloud synchronization</text>
+    <text x="850" y="942"><tspan fill="#c07070" font-weight="700">×</tspan>  Device voices vary</text>
+    <text x="850" y="976"><tspan fill="#c07070" font-weight="700">×</tspan>  Preferences stay on one device</text>
   </g>
 
-  <text x="800" y="1075" text-anchor="middle" fill="#6b7c96" font-family="Segoe UI, Arial, sans-serif" font-size="15">Different products deserve different architectures  the browser owns the SleepCheck domain</text>
+  <text x="800" y="1075" text-anchor="middle" fill="#6b7c96" font-family="Segoe UI, Arial, sans-serif" font-size="15">Different products deserve different architectures — the browser owns the SleepCheck domain</text>
 </svg>
