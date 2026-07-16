@@ -16,8 +16,11 @@ import { SiteHomeLink } from "@/components/SiteHomeLink";
 import {
   APP_NAME,
   APP_TAGLINE,
+  LINKEDIN_ARTICLE_LABEL,
+  LINKEDIN_ARTICLE_URL,
   RETIRECHECK_URL,
-  SITE_HOME_URL,
+  SITE_CASE_STUDY_LABEL,
+  SITE_CASE_STUDY_URL,
   SITE_SERIES_NAME,
 } from "@/lib/brand";
 import { audioEngine } from "@/lib/audioEngine";
@@ -1109,12 +1112,22 @@ export function SleepApp() {
                   </li>
                   <li>
                     <a
-                      href={`${SITE_HOME_URL}/projects/sleep`}
+                      href={SITE_CASE_STUDY_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="transition-colors hover:text-foreground"
                     >
-                      Case study
+                      {SITE_CASE_STUDY_LABEL}
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={LINKEDIN_ARTICLE_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors hover:text-foreground"
+                    >
+                      {LINKEDIN_ARTICLE_LABEL}
                     </a>
                   </li>
                 </ul>

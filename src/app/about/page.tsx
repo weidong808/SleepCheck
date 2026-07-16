@@ -6,6 +6,10 @@ import {
   APP_DESCRIPTION,
   APP_NAME,
   APP_TAGLINE,
+  LINKEDIN_ARTICLE_LABEL,
+  LINKEDIN_ARTICLE_URL,
+  SITE_CASE_STUDY_LABEL,
+  SITE_CASE_STUDY_URL,
   SITE_SERIES_NAME,
 } from "@/lib/brand";
 
@@ -67,6 +71,22 @@ export default function AboutPage() {
         <Link href="/" className="btn btn-primary">
           Open SleepCheck
         </Link>
+        <a
+          href={SITE_CASE_STUDY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-secondary"
+        >
+          {SITE_CASE_STUDY_LABEL} ↗
+        </a>
+        <a
+          href={LINKEDIN_ARTICLE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-secondary"
+        >
+          {LINKEDIN_ARTICLE_LABEL} ↗
+        </a>
         <SiteHomeLink
           variant="full"
           markSize={22}
