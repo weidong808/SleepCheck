@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Analytics } from "@/components/Analytics";
 import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE, APP_URL } from "@/lib/brand";
 import "./globals.css";
 
@@ -77,6 +78,7 @@ export default function RootLayout({
     >
       <body className="bg-background text-foreground min-h-full antialiased">
         {children}
+        <Analytics />
       </body>
     </html>
   );
