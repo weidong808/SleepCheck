@@ -1,5 +1,5 @@
 // SleepCheck service worker — offline app shell + ambience + scene art.
-const CACHE = "sleepcheck-v4";
+const CACHE = "sleepcheck-v5";
 const SHELL = [
   "/",
   "/about",
@@ -42,6 +42,8 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  // Never intercept Vercel Analytics / platform routes.
+  if (url.pathname.startsWith("/_vercel/")) return;
 
   if (req.mode === "navigate") {
     event.respondWith(
