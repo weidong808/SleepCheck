@@ -139,52 +139,49 @@ SleepCheck is **#2** in a growing portfolio of production case studies under one
 ```mermaid
 flowchart TB
   Hub[weidong-shi.com hub]
-  RC[RetireCheck<br/>domain math + API]
-  SC[SleepCheck<br/>local-first PWA]
-  Next[Future AI in Action apps]
+  RC[RetireCheck App 1]
+  SC[SleepCheck App 2]
+  RA[Readiness Advisor App 3]
 
   Hub --> RC
   Hub --> SC
-  Hub --> Next
+  Hub --> RA
 
   Roadmap[ai-in-action-roadmap] -.-> Hub
   Roadmap -.-> RC
   Roadmap -.-> SC
-  Roadmap -.-> Next
+  Roadmap -.-> RA
 ```
 
 ASCII equivalent:
 
 ```
-                    ┌─────────────────────┐
-                    │   weidong-shi.com   │
-                    │   AI in Action hub  │
-                    └──────────┬──────────┘
-           ┌───────────────────┼───────────────────┐
-           ▼                   ▼                   ▼
-   RetireCheck #1        SleepCheck #2         Future apps
-   (C# domain + API)     (client PWA + audio)  (shared brand)
-           │                   │
-           └─────────┬─────────┘
-                     ▼
-         github.com/weidong808/ai-in-action-roadmap
+                    +---------------------+
+                    |   weidong-shi.com   |
+                    |   AI in Action hub  |
+                    +----------+----------+
+      +----------------+-------+-------+----------------+
+      v                v               v                v
+ RetireCheck #1   SleepCheck #2   Readiness #3    (roadmap)
+ (C# domain+API)  (PWA + audio)   (gates + RAG)
 ```
 
 ### Shared series patterns
 
 - Parent brand chrome and hub linking (`brand.ts` / site case studies)
+- Methodology: **Build → Validate → Improve → Document → Share**
 - Intent-driven AI workflow: rules before prompts, human review, ship for real
 - Production URLs under `*.weidong-shi.com`
 - Case-study write-ups on the hub (LinkedIn drafts follow when ready)
 
 ### Deliberate divergence
 
-| | RetireCheck | SleepCheck |
-|---|-------------|------------|
-| Core risk | Incorrect financial math | Audio glitches / broken calm UX |
-| Architecture | Pure C# domain + API | Browser Web Audio + local storage |
-| Auth / data | Stateless API calls | No accounts; device-local prefs |
-| Deploy | Vercel + Render | Vercel PWA |
+| | RetireCheck | SleepCheck | Readiness |
+|---|-------------|------------|-----------|
+| Core risk | Incorrect financial math | Audio glitches / broken calm UX | Inflated readiness / false certification |
+| Architecture | Pure C# domain + API | Browser Web Audio + local storage | Deterministic scoring + advisory LLM |
+| Auth / data | Stateless API calls | No accounts; device-local prefs | Browser-held answers; transient server |
+| Deploy | Vercel + Render | Vercel PWA | Vercel |
 
 Same series thesis, domain-appropriate architecture.
 
@@ -194,7 +191,9 @@ Same series thesis, domain-appropriate architecture.
 
 - Live app: https://sleepcheck.weidong-shi.com  
 - Hub: https://weidong-shi.com  
-- Hub article: https://weidong-shi.com/articles/ai-in-action-sleepcheck  
+- Hub case study: https://weidong-shi.com/work/sleepcheck  
+- Hub insight: https://weidong-shi.com/insights/ai-in-action-sleepcheck  
 - LinkedIn article: https://www.linkedin.com/pulse/ai-action-2-from-idea-sleepcheck-weidong-shi-0fwrc  
-- RetireCheck article: https://weidong-shi.com/articles/ai-in-action-retirecheck  
+- RetireCheck: https://weidong-shi.com/work/retirecheck  
+- Readiness: https://weidong-shi.com/work/readiness  
 - Roadmap: https://github.com/weidong808/ai-in-action-roadmap  

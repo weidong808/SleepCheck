@@ -10,6 +10,8 @@ import {
   LINKEDIN_ARTICLE_URL,
   SITE_CASE_STUDY_LABEL,
   SITE_CASE_STUDY_URL,
+  SITE_INSIGHT_LABEL,
+  SITE_INSIGHT_URL,
   SITE_SERIES_NAME,
 } from "@/lib/brand";
 
@@ -78,6 +80,14 @@ export default function AboutPage() {
           className="btn btn-secondary"
         >
           {SITE_CASE_STUDY_LABEL} ↗
+        </a>
+        <a
+          href={SITE_INSIGHT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-secondary"
+        >
+          {SITE_INSIGHT_LABEL} ↗
         </a>
         <a
           href={LINKEDIN_ARTICLE_URL}
