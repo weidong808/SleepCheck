@@ -99,6 +99,26 @@ button {
   outline-offset: 2px;
 }
 
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 100;
+  border-radius: 0.375rem;
+  background: var(--accent);
+  color: var(--accent-foreground);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: top 160ms ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
 a:focus-visible,
 button:focus-visible,
 .tab-btn:focus-visible,

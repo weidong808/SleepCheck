@@ -592,6 +592,9 @@ export function SleepApp() {
 
   return (
     <div className="relative min-h-screen">
+      <a href="#main" className="skip-link">
+        Skip to content
+      </a>
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 z-[1]"
@@ -621,14 +624,20 @@ export function SleepApp() {
               </span>
             </span>
           </Link>
-          <div className="flex shrink-0 items-center gap-3 text-sm sm:gap-4">
+          <div className="flex shrink-0 items-center gap-2.5 text-sm sm:gap-4">
             {streak && streak.current > 0 && (
               <span
-                className="hidden items-center gap-1.5 text-muted sm:flex"
+                className="inline-flex items-center gap-1.5 text-muted"
                 title={`Wind-down streak · best ${streak.best}`}
               >
-                <IconMoon className="h-4 w-4 text-accent" />
-                {streak.current} night{streak.current === 1 ? "" : "s"}
+                <IconMoon className="h-4 w-4 text-accent" aria-hidden />
+                <span className="font-mono text-xs sm:text-sm">
+                  {streak.current}
+                  <span className="hidden sm:inline">
+                    {" "}
+                    night{streak.current === 1 ? "" : "s"}
+                  </span>
+                </span>
               </span>
             )}
             <Link
@@ -645,6 +654,7 @@ export function SleepApp() {
           </div>
         </header>
 
+        <main id="main">
         {sharedMix && (
           <div className="panel mb-6 flex flex-wrap items-center justify-between gap-4 border-accent/40 p-5">
             <div>
@@ -707,10 +717,11 @@ export function SleepApp() {
               <button
                 type="button"
                 onClick={shareMix}
-                className="hidden shrink-0 items-center gap-2 border border-border px-3 py-2 text-sm text-muted transition-colors hover:text-foreground sm:flex"
+                aria-label={shareNote ?? "Share mix link"}
+                className="flex shrink-0 items-center gap-2 border border-border px-2.5 py-2 text-sm text-muted transition-colors hover:text-foreground sm:px-3"
               >
-                <IconShare className="h-4 w-4" />
-                {shareNote ?? "Share"}
+                <IconShare className="h-4 w-4" aria-hidden />
+                <span className="hidden sm:inline">{shareNote ?? "Share"}</span>
               </button>
             )}
           </div>
@@ -780,7 +791,7 @@ export function SleepApp() {
         </section>
 
         {/* ——— Nav ——— */}
-        <nav className="tab-bar mb-8" aria-label="App sections">
+        <nav className="tab-bar mb-8" role="tablist" aria-label="App sections">
           {(
             [
               ["sleep", "Sleep"],
@@ -791,8 +802,33 @@ export function SleepApp() {
             <button
               key={id}
               type="button"
+              role="tab"
+              id={`tab-${id}`}
+              aria-selected={tab === id}
+              aria-controls={`panel-${id}`}
+              tabIndex={tab === id ? 0 : -1}
               className={`tab-btn ${tab === id ? "active" : ""}`}
               onClick={() => updatePrefs({ tab: id })}
+              onKeyDown={(e) => {
+                const order: TabId[] = ["sleep", "stories", "breathe"];
+                const i = order.indexOf(id);
+                let next: TabId | null = null;
+                if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                  next = order[(i + 1) % order.length];
+                } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                  next = order[(i - 1 + order.length) % order.length];
+                } else if (e.key === "Home") {
+                  next = order[0];
+                } else if (e.key === "End") {
+                  next = order[order.length - 1];
+                }
+                if (!next) return;
+                e.preventDefault();
+                updatePrefs({ tab: next });
+                requestAnimationFrame(() => {
+                  document.getElementById(`tab-${next}`)?.focus();
+                });
+              }}
             >
               {label}
             </button>
@@ -801,7 +837,11 @@ export function SleepApp() {
 
         {/* ——— Sleep: scenes + mixer ——— */}
         {tab === "sleep" && (
-          <section>
+          <section
+            id="panel-sleep"
+            role="tabpanel"
+            aria-labelledby="tab-sleep"
+          >
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {PRESETS.map((p) => {
                 const isActive = activePreset === p.id;
@@ -919,7 +959,12 @@ export function SleepApp() {
 
         {/* ——— Stories ——— */}
         {tab === "stories" && selectedStory && (
-          <section className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+          <section
+            id="panel-stories"
+            role="tabpanel"
+            aria-labelledby="tab-stories"
+            className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]"
+          >
             <div className="flex flex-col gap-3">
               {STORIES.map((s) => {
                 const selected = selectedStory.id === s.id;
@@ -1023,7 +1068,12 @@ export function SleepApp() {
 
         {/* ——— Breathe ——— */}
         {tab === "breathe" && (
-          <section className="panel grid items-center gap-8 p-6 sm:p-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <section
+            id="panel-breathe"
+            role="tabpanel"
+            aria-labelledby="tab-breathe"
+            className="panel grid items-center gap-8 p-6 sm:p-8 lg:grid-cols-[1.2fr_0.8fr]"
+          >
             <div>
               <p className="section-label">Guided breathing</p>
               <h2 className="display mt-3 text-4xl text-foreground">
@@ -1071,6 +1121,7 @@ export function SleepApp() {
             </div>
           </section>
         )}
+        </main>
 
         <footer className="mt-16 border-t border-border pt-8 text-sm text-muted">
           <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
