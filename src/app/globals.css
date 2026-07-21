@@ -89,6 +89,26 @@ button {
   background: transparent;
 }
 
+/* Keyboard focus — visible without competing with mouse click styles */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+a:focus-visible,
+button:focus-visible,
+.tab-btn:focus-visible,
+.sound-card:focus-visible,
+.story-row:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -99,6 +119,12 @@ input[type="range"] {
   outline: 0;
 }
 
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 6px;
+  border-radius: 4px;
+}
+
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 14px;
@@ -106,6 +132,10 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: var(--foreground);
   border: 2px solid var(--background);
+}
+
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
 }
 
 a {
@@ -214,7 +244,7 @@ a {
 
 .tab-bar {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   border-bottom: 1px solid var(--border);
 }
 
@@ -288,7 +318,12 @@ a {
 
 @media (max-width: 640px) {
   .tab-bar {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .tab-btn {
+    padding: 0.85rem 0.35rem;
+    font-size: 0.8125rem;
   }
 }
 
