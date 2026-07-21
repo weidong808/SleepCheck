@@ -75,6 +75,7 @@ export function SleepApp() {
   const [customMins, setCustomMins] = useState("");
   const [sharedMix, setSharedMix] = useState<Record<string, number> | null>(null);
   const [shareNote, setShareNote] = useState<string | null>(null);
+  const [statusMsg, setStatusMsg] = useState("");
   const [streak, setStreak] = useState<StreakStats | null>(null);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [showMixer, setShowMixer] = useState(false);
@@ -136,17 +137,18 @@ export function SleepApp() {
       speechSynthesis.addEventListener?.("voiceschanged", updateVoices);
     }
 
-    // Warm the audio cache on first interaction (user gesture unlocks audio).
+    // Warm the audio cache on first interaction (capture so decode starts
+    // before the click handler that may call play).
     const warm = () => {
       if (preloadedRef.current) return;
       preloadedRef.current = true;
       audioEngine.preload(SAMPLE_SRCS);
     };
-    window.addEventListener("pointerdown", warm, { once: true });
+    window.addEventListener("pointerdown", warm, { once: true, capture: true });
 
     return () => {
       window.clearTimeout(t);
-      window.removeEventListener("pointerdown", warm);
+      window.removeEventListener("pointerdown", warm, true);
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         speechSynthesis.removeEventListener?.("voiceschanged", updateVoices);
       }
@@ -268,9 +270,19 @@ export function SleepApp() {
     };
   }, [playing, nowTitle]);
 
+  const ensureAudioWarm = () => {
+    if (!preloadedRef.current) {
+      preloadedRef.current = true;
+      audioEngine.preload(SAMPLE_SRCS);
+    } else {
+      audioEngine.boot();
+    }
+  };
+
   const startSound = (id: string, vol: number) => {
     const def = SOUNDS.find((s) => s.id === id);
     if (!def) return;
+    ensureAudioWarm();
     audioEngine.start(id, def.type, vol, def.src);
   };
 
@@ -294,6 +306,7 @@ export function SleepApp() {
 
   const applyMix = (mix: Record<string, number>, presetId?: string) => {
     if (!prefs) return;
+    ensureAudioWarm();
     audioEngine.stopAll();
     const nextSounds: Record<string, SoundState> = { ...prefs.sounds };
     for (const id of Object.keys(nextSounds)) {
@@ -311,9 +324,14 @@ export function SleepApp() {
       ...(presetId ? { lastPresetId: presetId } : {}),
     });
     markWindDown();
+    const presetName = presetId
+      ? PRESETS.find((p) => p.id === presetId)?.name
+      : null;
+    setStatusMsg(presetName ? `Playing ${presetName}` : "Playing mix");
   };
 
   const stopStory = useCallback(() => {
+    const wasReading = readingRef.current;
     readingRef.current = false;
     setReading(false);
     setPaused(false);
@@ -324,6 +342,7 @@ export function SleepApp() {
     if (timerLeftRef.current == null || timerLeftRef.current > 61) {
       audioEngine.fadeTo(0.82, 1.5);
     }
+    if (wasReading) setStatusMsg("Story stopped");
   }, []);
 
   const stopAllAudio = useCallback(() => {
@@ -338,6 +357,7 @@ export function SleepApp() {
       }
       return { ...prev, sounds: nextSounds };
     });
+    setStatusMsg("Stopped");
   }, [stopStory]);
 
   /** The one big button. */
@@ -365,14 +385,17 @@ export function SleepApp() {
       if (navigator.share) {
         await navigator.share({ title, url });
         setShareNote("Shared");
+        setStatusMsg("Shared");
       } else {
         await navigator.clipboard.writeText(url);
         setShareNote("Link copied");
+        setStatusMsg("Link copied");
       }
     } catch {
       try {
         await navigator.clipboard.writeText(url);
         setShareNote("Link copied");
+        setStatusMsg("Link copied");
       } catch {
         setShareNote(null);
       }
@@ -425,6 +448,7 @@ export function SleepApp() {
     if (timerLeftRef.current == null || timerLeftRef.current > 61) {
       audioEngine.fadeTo(0.38, 1.2);
     }
+    setStatusMsg(`Playing story: ${selectedStory.title}`);
     readNextRef.current();
   };
 
@@ -433,9 +457,11 @@ export function SleepApp() {
     if (paused) {
       resumeSpeech();
       setPaused(false);
+      setStatusMsg("Story resumed");
     } else {
       pauseSpeech();
       setPaused(true);
+      setStatusMsg("Story paused");
     }
   };
 
@@ -479,6 +505,7 @@ export function SleepApp() {
     setBreathBig(false);
     void wakeLockRef.current?.release().catch(() => {});
     wakeLockRef.current = null;
+    setStatusMsg("Breathing stopped");
   };
 
   const startBreath = () => {
@@ -496,6 +523,7 @@ export function SleepApp() {
       setBreathPhase(ph);
       setBreathCount(left);
       setBreathBig(ph === "Inhale" || ph === "Hold");
+      setStatusMsg(ph);
       sayCue(ph);
     };
     apply();
@@ -538,15 +566,20 @@ export function SleepApp() {
     setTimerLeft(total);
     timerLeftRef.current = total;
     updatePrefs({ lastTimerMinutes: mins });
+    setStatusMsg(`Timer set for ${mins} minutes`);
     let left = total;
     sleepTimerRef.current = window.setInterval(() => {
       left -= 1;
       setTimerLeft(left);
       timerLeftRef.current = left;
-      if (left === 60) audioEngine.fadeTo(0, 56);
+      if (left === 60) {
+        audioEngine.fadeTo(0, 56);
+        setStatusMsg("Fading to silence");
+      }
       if (left <= 0) {
         clearSleepTimer();
         stopAllAudio();
+        setStatusMsg("Timer ended");
         // Restore master volume only after node-level fades finish,
         // so nothing blips back in audibly after the timer ends.
         window.setTimeout(() => audioEngine.fadeTo(0.82, 0.5), 1600);
@@ -557,6 +590,7 @@ export function SleepApp() {
   const cancelTimer = () => {
     clearSleepTimer();
     audioEngine.fadeTo(reading ? 0.38 : 0.82, 2);
+    setStatusMsg("Timer canceled");
   };
 
   // Countdown in the tab title so the timer is visible from anywhere.
@@ -655,6 +689,9 @@ export function SleepApp() {
         </header>
 
         <main id="main">
+        <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {statusMsg}
+        </p>
         {sharedMix && (
           <div className="panel mb-6 flex flex-wrap items-center justify-between gap-4 border-accent/40 p-5">
             <div>
@@ -718,7 +755,7 @@ export function SleepApp() {
                 type="button"
                 onClick={shareMix}
                 aria-label={shareNote ?? "Share mix link"}
-                className="flex shrink-0 items-center gap-2 border border-border px-2.5 py-2 text-sm text-muted transition-colors hover:text-foreground sm:px-3"
+                className="touch-target flex shrink-0 items-center gap-2 border border-border px-2.5 text-sm text-muted transition-colors hover:text-foreground sm:px-3"
               >
                 <IconShare className="h-4 w-4" aria-hidden />
                 <span className="hidden sm:inline">{shareNote ?? "Share"}</span>
@@ -735,7 +772,7 @@ export function SleepApp() {
                   <button
                     key={m}
                     type="button"
-                    className="border border-border px-3 py-1.5 text-sm text-muted transition-colors hover:border-accent/50 hover:text-foreground"
+                    className="touch-target border border-border px-3 text-sm text-muted transition-colors hover:border-accent/50 hover:text-foreground"
                     onClick={() => startTimer(m)}
                   >
                     {m}m
@@ -760,11 +797,11 @@ export function SleepApp() {
                     onChange={(e) => setCustomMins(e.target.value)}
                     placeholder="…"
                     aria-label="Custom timer minutes"
-                    className="w-14 border border-border bg-transparent px-2 py-1.5 text-center text-sm text-foreground outline-none [appearance:textfield]"
+                    className="touch-target w-14 border border-border bg-transparent px-2 text-center text-sm text-foreground outline-none [appearance:textfield]"
                   />
                   <button
                     type="submit"
-                    className="border border-l-0 border-border px-2.5 py-1.5 text-sm text-muted hover:text-foreground"
+                    className="touch-target border border-l-0 border-border px-2.5 text-sm text-muted hover:text-foreground"
                   >
                     Set
                   </button>
@@ -780,7 +817,7 @@ export function SleepApp() {
                 </span>
                 <button
                   type="button"
-                  className="ml-2 border border-border px-3 py-1.5 text-sm text-muted hover:text-foreground"
+                  className="touch-target ml-2 border border-border px-3 text-sm text-muted hover:text-foreground"
                   onClick={cancelTimer}
                 >
                   Cancel
@@ -888,7 +925,7 @@ export function SleepApp() {
 
             <button
               type="button"
-              className="mt-8 flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground"
+              className="touch-target mt-8 flex items-center gap-2 px-1 text-sm text-muted transition-colors hover:text-foreground"
               onClick={() => setShowMixer((v) => !v)}
               aria-expanded={showMixer}
             >
@@ -976,6 +1013,7 @@ export function SleepApp() {
                   >
                     <button
                       type="button"
+                      aria-pressed={selected}
                       className={`relative h-28 overflow-hidden border text-left transition-all ${
                         selected
                           ? "border-accent/60"
@@ -1084,7 +1122,8 @@ export function SleepApp() {
                   <button
                     key={id}
                     type="button"
-                    className={`border px-3 py-2 text-sm transition-colors ${
+                    aria-pressed={prefs.breathMode === id}
+                    className={`touch-target border px-3 text-sm transition-colors ${
                       prefs.breathMode === id
                         ? "border-accent/50 bg-accent/10 text-foreground"
                         : "border-border text-muted hover:text-foreground"
@@ -1110,13 +1149,14 @@ export function SleepApp() {
             </div>
             <div className="flex min-h-[260px] items-center justify-center border border-border bg-background/40">
               <div
-                aria-live="polite"
                 className={`flex h-36 w-36 flex-col items-center justify-center border border-border transition-transform duration-[4000ms] ease-in-out ${
                   breathBig ? "scale-125 border-accent/40" : "scale-100"
                 }`}
               >
                 <p className="section-label">{breathPhase}</p>
-                <p className="display mt-2 text-5xl text-foreground">{breathCount}</p>
+                <p className="display mt-2 text-5xl text-foreground" aria-hidden>
+                  {breathCount}
+                </p>
               </div>
             </div>
           </section>
@@ -1310,7 +1350,7 @@ function StoryDetailPanel({
             <button
               type="button"
               aria-pressed={prefs.voiceName == null}
-              className={`flex items-center gap-2 border py-1.5 pr-3 pl-1.5 text-sm transition-colors ${
+              className={`touch-target flex items-center gap-2 border pr-3 pl-1.5 text-sm transition-colors ${
                 prefs.voiceName == null
                   ? "border-accent/50 bg-accent/10 text-foreground"
                   : "border-border text-muted hover:text-foreground"
@@ -1331,7 +1371,7 @@ function StoryDetailPanel({
                 key={n.name}
                 type="button"
                 aria-pressed={prefs.voiceName === n.name}
-                className={`flex items-center gap-2 border py-1.5 pr-3 pl-1.5 text-sm transition-colors ${
+                className={`touch-target flex items-center gap-2 border pr-3 pl-1.5 text-sm transition-colors ${
                   prefs.voiceName === n.name
                     ? "border-accent/50 bg-accent/10 text-foreground"
                     : "border-border text-muted hover:text-foreground"
@@ -1369,7 +1409,7 @@ function StoryDetailPanel({
           )}
           <button
             type="button"
-            className="mt-3 text-xs text-muted underline-offset-2 hover:text-foreground hover:underline"
+            className="touch-target mt-3 px-1 text-xs text-muted underline-offset-2 hover:text-foreground hover:underline"
             onClick={onToggleAllVoices}
           >
             {showAllVoices

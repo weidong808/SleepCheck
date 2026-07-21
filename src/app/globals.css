@@ -114,7 +114,7 @@ button {
 }
 
 .skip-link:focus {
-  top: 1rem;
+  top: max(1rem, env(safe-area-inset-top, 0px));
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
@@ -168,7 +168,18 @@ a {
   z-index: 2;
   width: min(1080px, 100%);
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 3.5rem;
+  padding:
+    max(1.5rem, env(safe-area-inset-top, 0px))
+    max(1.25rem, env(safe-area-inset-right, 0px))
+    max(3.5rem, env(safe-area-inset-bottom, 0px))
+    max(1.25rem, env(safe-area-inset-left, 0px));
+}
+
+/* Compact controls still meet ~44px touch targets without enlarging type */
+.touch-target {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  box-sizing: border-box;
 }
 
 .display {
@@ -246,7 +257,7 @@ a {
   background: transparent;
   color: var(--muted);
   border-color: transparent;
-  min-height: 2.25rem;
+  min-height: 2.75rem;
   padding: 0 0.75rem;
 }
 
@@ -353,5 +364,11 @@ a {
   *::after {
     animation: none !important;
     transition: none !important;
+  }
+
+  /* Static overlays are cheap but still drop under reduced-motion prefs */
+  body::before,
+  body::after {
+    display: none;
   }
 }
