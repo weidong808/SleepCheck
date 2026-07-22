@@ -164,8 +164,8 @@ If you're also exploring AI-assisted software engineering, I'd enjoy hearing how
 - LinkedIn article: https://www.linkedin.com/pulse/ai-action-2-from-idea-sleepcheck-weidong-shi-0fwrc
 - Live app: https://sleepcheck.weidong-shi.com
 - Source: https://github.com/weidong808/SleepCheck
-- Hub case study: https://weidong-shi.com/projects/sleep
-- Long-form on the hub: https://weidong-shi.com/articles/ai-in-action-sleepcheck
+- Hub case study: https://weidong-shi.com/work/sleepcheck
+- Long-form on the hub: https://weidong-shi.com/insights/ai-in-action-sleepcheck
 - Public series roadmap: https://github.com/weidong808/ai-in-action-roadmap
 - Previous: RetireCheck / AI in Action #1 on the hub and LinkedIn
 

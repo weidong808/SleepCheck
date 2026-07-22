@@ -8,7 +8,7 @@ Calm wind-down companion: natural soundscapes, bedtime stories, guided breathing
 |--------|--------|
 | **Live demo** | [sleepcheck.weidong-shi.com](https://sleepcheck.weidong-shi.com) |
 | **Architecture** | [docs/architecture.md](docs/architecture.md) |
-| **Series** | [AI in Action on weidong-shi.com](https://weidong-shi.com) · [Hub article](https://weidong-shi.com/articles/ai-in-action-sleepcheck) · [LinkedIn](https://www.linkedin.com/pulse/ai-action-2-from-idea-sleepcheck-weidong-shi-0fwrc) |
+| **Series** | [AI in Action on weidong-shi.com](https://weidong-shi.com) · [Hub case study](https://weidong-shi.com/work/sleepcheck) · [Hub insight](https://weidong-shi.com/insights/ai-in-action-sleepcheck) · [LinkedIn](https://www.linkedin.com/pulse/ai-action-2-from-idea-sleepcheck-weidong-shi-0fwrc) |
 | **Roadmap** | [ai-in-action-roadmap](https://github.com/weidong808/ai-in-action-roadmap) |
 
 ## Features

@@ -18,9 +18,12 @@ import {
   APP_TAGLINE,
   LINKEDIN_ARTICLE_LABEL,
   LINKEDIN_ARTICLE_URL,
+  READINESS_URL,
   RETIRECHECK_URL,
   SITE_CASE_STUDY_LABEL,
   SITE_CASE_STUDY_URL,
+  SITE_INSIGHT_LABEL,
+  SITE_INSIGHT_URL,
   SITE_SERIES_NAME,
 } from "@/lib/brand";
 import { audioEngine } from "@/lib/audioEngine";
@@ -1177,8 +1180,8 @@ export function SleepApp() {
                 <span className="display text-lg text-foreground">{APP_NAME}</span>
               </div>
               <p className="mt-3 text-xs leading-relaxed">
-                A calm wind-down companion. Everything stays on this device — no
-                account, no tracking. Not medical advice. Part of{" "}
+                A calm wind-down companion. Preferences stay on this device — no
+                account, no cloud sleep data. Not medical advice. Part of{" "}
                 {SITE_SERIES_NAME}.
               </p>
               <div className="mt-4">
@@ -1213,6 +1216,16 @@ export function SleepApp() {
                   </li>
                   <li>
                     <a
+                      href={SITE_INSIGHT_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors hover:text-foreground"
+                    >
+                      {SITE_INSIGHT_LABEL}
+                    </a>
+                  </li>
+                  <li>
+                    <a
                       href={LINKEDIN_ARTICLE_URL}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -1237,6 +1250,16 @@ export function SleepApp() {
                       className="transition-colors hover:text-foreground"
                     >
                       RetireCheck
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={READINESS_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors hover:text-foreground"
+                    >
+                      Readiness Advisor
                     </a>
                   </li>
                 </ul>
