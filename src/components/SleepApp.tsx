@@ -664,8 +664,9 @@ export function SleepApp() {
           <div className="flex shrink-0 items-center gap-2.5 text-sm sm:gap-4">
             {streak && streak.current > 0 && (
               <span
-                className="inline-flex items-center gap-1.5 text-muted"
+                className="touch-target inline-flex items-center gap-1.5 px-1 text-muted"
                 title={`Wind-down streak · best ${streak.best}`}
+                aria-label={`Wind-down streak: ${streak.current} night${streak.current === 1 ? "" : "s"}, best ${streak.best}`}
               >
                 <IconMoon className="h-4 w-4 text-accent" aria-hidden />
                 <span className="font-mono text-xs sm:text-sm">
@@ -679,14 +680,14 @@ export function SleepApp() {
             )}
             <Link
               href="/about"
-              className="text-muted transition-colors hover:text-foreground"
+              className="touch-target inline-flex items-center px-2 text-muted transition-colors hover:text-foreground"
             >
               About
             </Link>
             <SiteHomeLink
               variant="compact"
               markSize={18}
-              className="hidden text-muted sm:inline-flex"
+              className="touch-target text-muted"
             />
           </div>
         </header>

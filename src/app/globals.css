@@ -147,11 +147,21 @@ input[type="range"]:focus-visible {
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: var(--foreground);
   border: 2px solid var(--background);
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--foreground);
+  border: 2px solid var(--background);
+  cursor: pointer;
 }
 
 input[type="range"]:focus-visible::-webkit-slider-thumb {
@@ -281,6 +291,7 @@ a {
 
 .tab-btn {
   position: relative;
+  min-height: 2.75rem;
   padding: 0.95rem 0.5rem;
   font-size: 0.875rem;
   color: var(--muted);
