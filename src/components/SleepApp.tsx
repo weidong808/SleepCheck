@@ -735,7 +735,7 @@ export function SleepApp() {
         )}
 
         {/* ——— Player ——— */}
-        <section className="panel mb-8 p-6 sm:p-8">
+        <section className="panel sc-rise mb-8 p-6 sm:p-8">
           <div className="flex items-center gap-6">
             <button
               type="button"
@@ -753,7 +753,7 @@ export function SleepApp() {
                 <IconPlay className="h-9 w-9 translate-x-0.5" />
               )}
             </button>
-            <div className="min-w-0 flex-1">
+            <div className="sc-rise-delay min-w-0 flex-1">
               <p className="section-label">Tonight</p>
               <h1 className="display mt-1 truncate text-3xl text-foreground sm:text-4xl">
                 {nowTitle}
