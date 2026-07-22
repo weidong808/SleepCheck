@@ -46,6 +46,10 @@ done
 - Not ChatGPT/Claude/ElevenLabs API narration
 - No accounts or Supabase
 
+## Privacy
+
+Preferences stay on-device. Live details: [Privacy](https://sleepcheck.weidong-shi.com/privacy).
+
 ## Local development
 
 ```bash

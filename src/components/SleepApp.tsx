@@ -684,6 +684,12 @@ export function SleepApp() {
             >
               About
             </Link>
+            <Link
+              href="/privacy"
+              className="touch-target inline-flex items-center px-2 text-muted transition-colors hover:text-foreground"
+            >
+              Privacy
+            </Link>
             <SiteHomeLink
               variant="compact"
               markSize={18}
@@ -1203,6 +1209,14 @@ export function SleepApp() {
                       className="transition-colors hover:text-foreground"
                     >
                       About
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/privacy"
+                      className="transition-colors hover:text-foreground"
+                    >
+                      Privacy
                     </Link>
                   </li>
                   <li>

@@ -65,7 +65,14 @@ export default function AboutPage() {
           <span className="text-foreground">Wellness disclaimer:</span>{" "}
           SleepCheck is a relaxation tool for general wellness. It is not
           medical advice and does not diagnose or treat sleep disorders. If you
-          have ongoing sleep problems, talk with a qualified clinician.
+          have ongoing sleep problems, talk with a qualified clinician.{" "}
+          <Link
+            href="/privacy"
+            className="text-foreground underline-offset-2 hover:underline"
+          >
+            Privacy
+          </Link>
+          .
         </p>
       </div>
 
