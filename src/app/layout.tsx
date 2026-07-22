@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { Analytics } from "@/components/Analytics";
+import { AppHeader } from "@/components/AppHeader";
 import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE, APP_URL } from "@/lib/brand";
 import "./globals.css";
 
@@ -77,6 +78,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${instrument.variable}`}
     >
       <body className="bg-background text-foreground min-h-full antialiased">
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
+        <AppHeader />
         {children}
         <Analytics />
       </body>

@@ -22,17 +22,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="shell max-w-2xl">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link
-          href="/"
-          className="text-sm text-muted transition-colors hover:text-foreground"
-        >
-          ← Back to {APP_NAME}
-        </Link>
-        <SiteHomeLink variant="compact" markSize={18} className="text-sm text-muted" />
-      </div>
-
+    <main id="main" className="shell max-w-2xl">
       <div className="mt-4 overflow-hidden border border-border">
         <Image
           src="/og.png"

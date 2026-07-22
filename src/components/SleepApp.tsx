@@ -629,9 +629,6 @@ export function SleepApp() {
 
   return (
     <div className="relative min-h-screen">
-      <a href="#main" className="skip-link">
-        Skip to content
-      </a>
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 z-[1]"
@@ -642,63 +639,25 @@ export function SleepApp() {
       />
 
       <div className="shell">
-        <header className="mb-4 flex items-center justify-between gap-4 border-b border-border/70 pb-3">
-          <Link href="/" className="group flex min-w-0 items-center gap-3">
-            <Image
-              src="/icon-192.png"
-              alt={`${APP_NAME} logo`}
-              width={40}
-              height={40}
-              priority
-              className="h-10 w-10 rounded-lg border border-border transition-colors group-hover:border-accent/50"
-            />
-            <span className="min-w-0">
-              <span className="display block text-2xl leading-none text-foreground transition-colors group-hover:text-accent">
-                {APP_NAME}
-              </span>
-              <span className="mt-1 block font-mono text-[10px] tracking-[0.14em] text-muted uppercase">
-                {SITE_SERIES_NAME} · {APP_TAGLINE}
-              </span>
-            </span>
-          </Link>
-          <div className="flex shrink-0 items-center gap-2.5 text-sm sm:gap-4">
-            {streak && streak.current > 0 && (
-              <span
-                className="touch-target inline-flex items-center gap-1.5 px-1 text-muted"
-                title={`Wind-down streak · best ${streak.best}`}
-                aria-label={`Wind-down streak: ${streak.current} night${streak.current === 1 ? "" : "s"}, best ${streak.best}`}
-              >
-                <IconMoon className="h-4 w-4 text-accent" aria-hidden />
-                <span className="font-mono text-xs sm:text-sm">
-                  {streak.current}
-                  <span className="hidden sm:inline">
-                    {" "}
-                    night{streak.current === 1 ? "" : "s"}
-                  </span>
+        <main id="main">
+        {streak && streak.current > 0 && (
+          <div className="mb-4 flex justify-end">
+            <span
+              className="touch-target inline-flex items-center gap-1.5 px-1 text-muted"
+              title={`Wind-down streak · best ${streak.best}`}
+              aria-label={`Wind-down streak: ${streak.current} night${streak.current === 1 ? "" : "s"}, best ${streak.best}`}
+            >
+              <IconMoon className="h-4 w-4 text-accent" aria-hidden />
+              <span className="font-mono text-xs sm:text-sm">
+                {streak.current}
+                <span className="hidden sm:inline">
+                  {" "}
+                  night{streak.current === 1 ? "" : "s"}
                 </span>
               </span>
-            )}
-            <Link
-              href="/about"
-              className="touch-target inline-flex items-center px-2 text-muted transition-colors hover:text-foreground"
-            >
-              About
-            </Link>
-            <Link
-              href="/privacy"
-              className="touch-target inline-flex items-center px-2 text-muted transition-colors hover:text-foreground"
-            >
-              Privacy
-            </Link>
-            <SiteHomeLink
-              variant="compact"
-              markSize={18}
-              className="touch-target text-muted"
-            />
+            </span>
           </div>
-        </header>
-
-        <main id="main">
+        )}
         <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
           {statusMsg}
         </p>

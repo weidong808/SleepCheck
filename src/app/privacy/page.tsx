@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SiteHomeLink } from "@/components/SiteHomeLink";
 import {
   APP_NAME,
   APP_URL,
@@ -16,21 +15,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <main id="main" className="shell max-w-2xl">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link
-          href="/"
-          className="touch-target inline-flex items-center text-sm text-muted transition-colors hover:text-foreground"
-        >
-          ← Back to {APP_NAME}
-        </Link>
-        <SiteHomeLink
-          variant="compact"
-          markSize={18}
-          className="touch-target text-sm text-muted"
-        />
-      </div>
-
-      <p className="eyebrow mt-10">
+      <p className="eyebrow mt-2">
         {SITE_SERIES_NAME} · {APP_NAME}
       </p>
       <h1 className="display mt-4 text-4xl text-foreground sm:text-5xl">

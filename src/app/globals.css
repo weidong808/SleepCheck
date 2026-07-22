@@ -11,6 +11,7 @@
   --accent-foreground: #04140e;
   --ring: #3ecf8e;
   --warm: #d9a13e;
+  --header-bg: color-mix(in srgb, var(--background) 82%, transparent);
   --hero-glow: rgba(62, 207, 142, 0.1);
   --grid-line: rgba(243, 243, 241, 0.045);
 }
@@ -198,7 +199,7 @@ a {
   width: min(1080px, 100%);
   margin: 0 auto;
   padding:
-    max(1.5rem, env(safe-area-inset-top, 0px))
+    1.25rem
     max(1.25rem, env(safe-area-inset-right, 0px))
     max(3.5rem, env(safe-area-inset-bottom, 0px))
     max(1.25rem, env(safe-area-inset-left, 0px));
