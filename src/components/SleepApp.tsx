@@ -628,7 +628,7 @@ export function SleepApp() {
     /Windows/i.test(navigator.userAgent);
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative">
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 z-[1]"
@@ -640,32 +640,14 @@ export function SleepApp() {
 
       <div className="shell">
         <main id="main">
-        {streak && streak.current > 0 && (
-          <div className="mb-4 flex justify-end">
-            <span
-              className="touch-target inline-flex items-center gap-1.5 px-1 text-muted"
-              title={`Wind-down streak · best ${streak.best}`}
-              aria-label={`Wind-down streak: ${streak.current} night${streak.current === 1 ? "" : "s"}, best ${streak.best}`}
-            >
-              <IconMoon className="h-4 w-4 text-accent" aria-hidden />
-              <span className="font-mono text-xs sm:text-sm">
-                {streak.current}
-                <span className="hidden sm:inline">
-                  {" "}
-                  night{streak.current === 1 ? "" : "s"}
-                </span>
-              </span>
-            </span>
-          </div>
-        )}
         <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
           {statusMsg}
         </p>
         {sharedMix && (
-          <div className="panel mb-6 flex flex-wrap items-center justify-between gap-4 border-accent/40 p-5">
+          <div className="panel mb-4 flex flex-wrap items-center justify-between gap-3 border-accent/40 p-4 sm:p-5">
             <div>
               <p className="section-label">A sleep mix was shared with you</p>
-              <p className="mt-2 text-lg text-foreground">{mixLabel(sharedMix)}</p>
+              <p className="mt-1.5 text-lg text-foreground">{mixLabel(sharedMix)}</p>
             </div>
             <div className="flex gap-2">
               <button
@@ -694,46 +676,66 @@ export function SleepApp() {
         )}
 
         {/* ——— Player ——— */}
-        <section className="panel sc-rise mb-8 p-6 sm:p-8">
-          <div className="flex items-center gap-6">
+        <section className="panel sc-rise mb-5 p-5 sm:mb-6 sm:p-6">
+          <div className="flex items-start justify-between gap-3">
+            <p className="section-label">Tonight</p>
+            <div className="flex shrink-0 items-center gap-1">
+              {streak && streak.current > 0 && (
+                <span
+                  className="touch-target inline-flex items-center gap-1.5 px-1 text-muted"
+                  title={`Wind-down streak · best ${streak.best}`}
+                  aria-label={`Wind-down streak: ${streak.current} night${streak.current === 1 ? "" : "s"}, best ${streak.best}`}
+                >
+                  <IconMoon className="h-4 w-4 text-accent" aria-hidden />
+                  <span className="font-mono text-xs sm:text-sm">
+                    {streak.current}
+                    <span className="hidden sm:inline">
+                      {" "}
+                      night{streak.current === 1 ? "" : "s"}
+                    </span>
+                  </span>
+                </span>
+              )}
+              {playing && (
+                <button
+                  type="button"
+                  onClick={shareMix}
+                  aria-label={shareNote ?? "Share mix link"}
+                  className="touch-target flex shrink-0 items-center gap-2 border border-border px-2.5 text-sm text-muted transition-colors hover:text-foreground sm:px-3"
+                >
+                  <IconShare className="h-4 w-4" aria-hidden />
+                  <span className="hidden sm:inline">{shareNote ?? "Share"}</span>
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-5 sm:gap-6">
             <button
               type="button"
               onClick={togglePlay}
               aria-label={playing ? "Stop everything" : "Play last scene"}
-              className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full border transition-all sm:h-24 sm:w-24 ${
+              className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border transition-all sm:h-20 sm:w-20 ${
                 playing
                   ? "border-accent/60 bg-accent/15 text-accent"
                   : "border-border bg-card text-foreground hover:border-accent/50 hover:text-accent"
               }`}
             >
               {playing ? (
-                <IconStop className="h-8 w-8" />
+                <IconStop className="h-7 w-7" />
               ) : (
-                <IconPlay className="h-9 w-9 translate-x-0.5" />
+                <IconPlay className="h-8 w-8 translate-x-0.5" />
               )}
             </button>
             <div className="sc-rise-delay min-w-0 flex-1">
-              <p className="section-label">Tonight</p>
-              <h1 className="display mt-1 truncate text-3xl text-foreground sm:text-4xl">
+              <h1 className="display truncate text-3xl text-foreground sm:text-4xl">
                 {nowTitle}
               </h1>
-              <p className="mt-1.5 text-sm text-muted">{nowSub}</p>
+              <p className="mt-1 text-sm text-muted">{nowSub}</p>
             </div>
-            {playing && (
-              <button
-                type="button"
-                onClick={shareMix}
-                aria-label={shareNote ?? "Share mix link"}
-                className="touch-target flex shrink-0 items-center gap-2 border border-border px-2.5 text-sm text-muted transition-colors hover:text-foreground sm:px-3"
-              >
-                <IconShare className="h-4 w-4" aria-hidden />
-                <span className="hidden sm:inline">{shareNote ?? "Share"}</span>
-              </button>
-            )}
           </div>
 
           {/* Timer row */}
-          <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-border pt-5">
+          <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-4">
             <span className="mr-1 text-xs text-muted">Sleep timer</span>
             {timerLeft == null ? (
               <>
@@ -797,7 +799,7 @@ export function SleepApp() {
         </section>
 
         {/* ——— Nav ——— */}
-        <nav className="tab-bar mb-8" role="tablist" aria-label="App sections">
+        <nav className="tab-bar mb-5 sm:mb-6" role="tablist" aria-label="App sections">
           {(
             [
               ["sleep", "Sleep"],
@@ -856,7 +858,7 @@ export function SleepApp() {
                     key={p.id}
                     type="button"
                     aria-pressed={isActive}
-                    className={`relative h-36 overflow-hidden border text-left transition-all sm:h-40 ${
+                    className={`relative h-32 overflow-hidden border text-left transition-all sm:h-36 ${
                       isActive
                         ? "border-accent/60"
                         : "border-border hover:border-foreground/30"
@@ -894,7 +896,7 @@ export function SleepApp() {
 
             <button
               type="button"
-              className="touch-target mt-8 flex items-center gap-2 px-1 text-sm text-muted transition-colors hover:text-foreground"
+              className="touch-target mt-5 flex items-center gap-2 px-1 text-sm text-muted transition-colors hover:text-foreground"
               onClick={() => setShowMixer((v) => !v)}
               aria-expanded={showMixer}
             >
@@ -1079,14 +1081,14 @@ export function SleepApp() {
             id="panel-breathe"
             role="tabpanel"
             aria-labelledby="tab-breathe"
-            className="panel grid items-center gap-8 p-6 sm:p-8 lg:grid-cols-[1.2fr_0.8fr]"
+            className="panel grid items-center gap-6 p-5 sm:gap-8 sm:p-6 lg:grid-cols-[1.2fr_0.8fr]"
           >
             <div>
               <p className="section-label">Guided breathing</p>
-              <h2 className="display mt-3 text-4xl text-foreground">
+              <h2 className="display mt-2 text-3xl text-foreground sm:mt-3 sm:text-4xl">
                 Slow the body first.
               </h2>
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="mt-5 flex flex-wrap gap-2">
                 {(Object.keys(BREATH_MODES) as BreathModeId[]).map((id) => (
                   <button
                     key={id}
@@ -1116,9 +1118,9 @@ export function SleepApp() {
                 </button>
               </div>
             </div>
-            <div className="flex min-h-[260px] items-center justify-center border border-border bg-background/40">
+            <div className="flex min-h-[200px] items-center justify-center border border-border bg-background/40 sm:min-h-[220px]">
               <div
-                className={`flex h-36 w-36 flex-col items-center justify-center border border-border transition-transform duration-[4000ms] ease-in-out ${
+                className={`flex h-32 w-32 flex-col items-center justify-center border border-border transition-transform duration-[4000ms] ease-in-out sm:h-36 sm:w-36 ${
                   breathBig ? "scale-125 border-accent/40" : "scale-100"
                 }`}
               >
@@ -1132,8 +1134,8 @@ export function SleepApp() {
         )}
         </main>
 
-        <footer className="mt-16 border-t border-border pt-8 text-sm text-muted">
-          <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+        <footer className="mt-10 border-t border-border pt-6 text-sm text-muted sm:mt-12 sm:pt-7">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
             <div className="max-w-sm">
               <div className="flex items-center gap-2.5">
                 <Image
@@ -1145,12 +1147,12 @@ export function SleepApp() {
                 />
                 <span className="display text-lg text-foreground">{APP_NAME}</span>
               </div>
-              <p className="mt-3 text-xs leading-relaxed">
+              <p className="mt-2.5 text-xs leading-relaxed">
                 A calm wind-down companion. Preferences stay on this device — no
                 account, no cloud sleep data. Not medical advice. Part of{" "}
                 {SITE_SERIES_NAME}.
               </p>
-              <div className="mt-4">
+              <div className="mt-3">
                 <SiteHomeLink
                   variant="full"
                   markSize={28}
@@ -1158,10 +1160,10 @@ export function SleepApp() {
                 />
               </div>
             </div>
-            <div className="flex gap-12 text-xs">
+            <div className="flex gap-10 text-xs sm:gap-12">
               <div>
-                <p className="section-label mb-3">App</p>
-                <ul className="space-y-2">
+                <p className="section-label mb-2.5">App</p>
+                <ul className="space-y-1.5">
                   <li>
                     <Link
                       href="/about"
@@ -1211,8 +1213,8 @@ export function SleepApp() {
                 </ul>
               </div>
               <div>
-                <p className="section-label mb-3">Series</p>
-                <ul className="space-y-2">
+                <p className="section-label mb-2.5">Series</p>
+                <ul className="space-y-1.5">
                   <li>
                     <SiteHomeLink variant="compact" markSize={16} />
                   </li>
@@ -1240,7 +1242,7 @@ export function SleepApp() {
               </div>
             </div>
           </div>
-          <div className="mt-8 flex flex-col gap-2 border-t border-border pt-5 text-xs sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-6 flex flex-col gap-2 border-t border-border pt-4 text-xs sm:flex-row sm:items-center sm:justify-between">
             <p>© {new Date().getFullYear()} Weidong Shi. All rights reserved.</p>
             <p className="font-mono tracking-wide uppercase">
               {SITE_SERIES_NAME} · Built with Next.js · Deployed on Vercel

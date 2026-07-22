@@ -15,21 +15,21 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <main id="main" className="shell max-w-2xl">
-      <p className="eyebrow mt-2">
+      <p className="eyebrow">
         {SITE_SERIES_NAME} · {APP_NAME}
       </p>
-      <h1 className="display mt-4 text-4xl text-foreground sm:text-5xl">
+      <h1 className="display mt-3 text-4xl text-foreground sm:text-5xl">
         Privacy
       </h1>
-      <p className="mt-4 text-base leading-relaxed text-muted">
+      <p className="mt-3 text-base leading-relaxed text-muted">
         What stays on your device, what we do not collect, and how page analytics
         work.
       </p>
 
-      <div className="mt-10 space-y-8 text-base leading-relaxed text-muted">
+      <div className="mt-7 space-y-6 text-base leading-relaxed text-muted sm:mt-8 sm:space-y-7">
         <section>
           <h2 className="text-lg text-foreground">On-device preferences</h2>
-          <p className="mt-2">
+          <p className="mt-1.5">
             Mix levels, scenes, timer settings, and streak data stay in this
             browser&apos;s local storage. There is no account and no cloud sleep
             database. Uninstalling the app or clearing site data removes those
@@ -39,7 +39,7 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="text-lg text-foreground">Audio and stories</h2>
-          <p className="mt-2">
+          <p className="mt-1.5">
             Soundscapes play locally in the browser. Stories use your
             device&apos;s built-in speech synthesis — not a cloud narration API.
             {APP_NAME} does not use a microphone or wearable to track sleep.
@@ -48,7 +48,7 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="text-lg text-foreground">Analytics</h2>
-          <p className="mt-2">
+          <p className="mt-1.5">
             The live site at{" "}
             <a
               href={APP_URL}
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="text-lg text-foreground">Wellness framing</h2>
-          <p className="mt-2">
+          <p className="mt-1.5">
             {APP_NAME} is a relaxation tool for general wellness. It is not
             medical advice and does not diagnose or treat sleep disorders.
           </p>
@@ -73,7 +73,7 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="text-lg text-foreground">Related</h2>
-          <p className="mt-2">
+          <p className="mt-1.5">
             Parent site:{" "}
             <a
               href={SITE_HOME_URL}
@@ -88,13 +88,13 @@ export default function PrivacyPage() {
         </section>
       </div>
 
-      <div className="mt-10">
+      <div className="mt-7 sm:mt-8">
         <Link href="/" className="btn btn-primary">
           Open {APP_NAME}
         </Link>
       </div>
 
-      <footer className="mt-14 flex flex-col gap-3 border-t border-border pt-5 pb-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+      <footer className="mt-10 flex flex-col gap-3 border-t border-border pt-5 pb-2 text-xs text-muted sm:mt-12 sm:flex-row sm:items-center sm:justify-between">
         <p>© {new Date().getFullYear()} Weidong Shi. All rights reserved.</p>
         <p className="font-mono tracking-wide uppercase">
           {SITE_SERIES_NAME} · Privacy

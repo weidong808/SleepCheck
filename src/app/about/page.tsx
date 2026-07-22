@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <main id="main" className="shell max-w-2xl">
-      <div className="mt-4 overflow-hidden border border-border">
+      <div className="overflow-hidden border border-border">
         <Image
           src="/og.png"
           alt={`${APP_NAME} — ${APP_TAGLINE}`}
@@ -34,14 +34,14 @@ export default function AboutPage() {
         />
       </div>
 
-      <p className="eyebrow mt-10">
+      <p className="eyebrow mt-6">
         {SITE_SERIES_NAME} · {APP_NAME}
       </p>
-      <h1 className="display mt-4 text-4xl text-foreground sm:text-5xl">
+      <h1 className="display mt-3 text-4xl text-foreground sm:text-5xl">
         {APP_TAGLINE}
       </h1>
 
-      <div className="mt-8 space-y-5 text-base leading-relaxed text-muted">
+      <div className="mt-6 space-y-4 text-base leading-relaxed text-muted sm:mt-7 sm:space-y-5">
         <p className="text-foreground/90">{APP_DESCRIPTION}</p>
         <p>
           Soundscapes are studio-quality ambience loops rendered offline and
@@ -66,7 +66,7 @@ export default function AboutPage() {
         </p>
       </div>
 
-      <div className="mt-10 flex flex-wrap gap-3">
+      <div className="mt-7 flex flex-wrap gap-3 sm:mt-8">
         <Link href="/" className="btn btn-primary">
           Open SleepCheck
         </Link>
@@ -101,7 +101,7 @@ export default function AboutPage() {
         />
       </div>
 
-      <footer className="mt-14 flex flex-col gap-3 border-t border-border pt-5 pb-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+      <footer className="mt-10 flex flex-col gap-3 border-t border-border pt-5 pb-2 text-xs text-muted sm:mt-12 sm:flex-row sm:items-center sm:justify-between">
         <p>© {new Date().getFullYear()} Weidong Shi. All rights reserved.</p>
         <p className="font-mono tracking-wide uppercase">
           {SITE_SERIES_NAME} · Built with Next.js · Deployed on Vercel
