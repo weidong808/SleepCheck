@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { SeriesAppsStrip } from "@/components/SeriesAppsStrip";
 import { SiteHomeLink } from "@/components/SiteHomeLink";
 import {
   APP_DESCRIPTION,
@@ -100,6 +101,8 @@ export default function AboutPage() {
           className="btn btn-secondary"
         />
       </div>
+
+      <SeriesAppsStrip className="mt-8" />
 
       <footer className="mt-10 flex flex-col gap-3 border-t border-border pt-5 pb-2 text-xs text-muted sm:mt-12 sm:flex-row sm:items-center sm:justify-between">
         <p>© {new Date().getFullYear()} Weidong Shi. All rights reserved.</p>

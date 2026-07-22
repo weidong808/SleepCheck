@@ -12,10 +12,12 @@ import {
   soundIcon,
 } from "@/components/Icons";
 import { BREATH_MODES } from "@/lib/breath";
+import { SeriesAppsStrip } from "@/components/SeriesAppsStrip";
 import { SiteHomeLink } from "@/components/SiteHomeLink";
 import {
   APP_NAME,
   APP_TAGLINE,
+  HABITCHECK_URL,
   LINKEDIN_ARTICLE_LABEL,
   LINKEDIN_ARTICLE_URL,
   READINESS_URL,
@@ -1135,6 +1137,7 @@ export function SleepApp() {
         </main>
 
         <footer className="mt-10 border-t border-border pt-6 text-sm text-muted sm:mt-12 sm:pt-7">
+          <SeriesAppsStrip bordered={false} className="mb-6" />
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
             <div className="max-w-sm">
               <div className="flex items-center gap-2.5">
@@ -1217,6 +1220,16 @@ export function SleepApp() {
                 <ul className="space-y-1.5">
                   <li>
                     <SiteHomeLink variant="compact" markSize={16} />
+                  </li>
+                  <li>
+                    <a
+                      href={HABITCHECK_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors hover:text-foreground"
+                    >
+                      HabitCheck
+                    </a>
                   </li>
                   <li>
                     <a
