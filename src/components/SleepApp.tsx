@@ -56,7 +56,12 @@ import {
   speakText,
 } from "@/lib/speech";
 import { STORIES, type Story } from "@/lib/stories";
-import { MAX_DETAIL_LENGTH, STORY_SETTINGS } from "@/lib/ai/story";
+import {
+  MAX_DETAIL_LENGTH,
+  STORY_SETTINGS,
+  estimateMinutes,
+  parseStreamedStory,
+} from "@/lib/ai/story";
 import {
   type BreathModeId,
   type SleepPreferences,
@@ -95,6 +100,10 @@ export function SleepApp() {
   const [storyDetail, setStoryDetail] = useState("");
   const [generatingStory, setGeneratingStory] = useState(false);
   const [storyGenError, setStoryGenError] = useState<string | null>(null);
+  const [streamPreview, setStreamPreview] = useState<{
+    title: string;
+    paragraphs: string[];
+  } | null>(null);
   const [narrators, setNarrators] = useState<Narrator[]>([]);
   const [allVoices, setAllVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [showAllVoices, setShowAllVoices] = useState(false);
@@ -212,42 +221,95 @@ export function SleepApp() {
     };
   }, []);
 
-  const generateStory = useCallback(async () => {
-    setGeneratingStory(true);
-    setStoryGenError(null);
-    try {
-      const res = await fetch("/api/story", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ setting: storySetting, detail: storyDetail }),
-      });
-      const json = (await res.json()) as {
-        ok?: boolean;
-        error?: string;
-        story?: { title: string; paragraphs: string[]; minutes: number };
-      };
-      if (!res.ok || !json.ok || !json.story) {
-        setStoryGenError(json.error || "Could not create a story right now.");
-        return;
-      }
+  const finalizeStory = useCallback(
+    (title: string, paragraphs: string[]) => {
       const story: Story = {
         id: `ai-${Date.now()}`,
-        title: json.story.title,
-        meta: `Custom story · about ${json.story.minutes} min`,
+        title,
+        meta: `Custom story · about ${estimateMinutes(paragraphs)} min`,
         image: "",
-        paras: json.story.paragraphs,
+        paras: paragraphs,
       };
       setAiStories((prev) => [...prev, story]);
       updatePrefs({ storyId: story.id });
       setShowStoryForm(false);
       setStoryDetail("");
+      setStreamPreview(null);
       setStatusMsg(`New story ready: ${story.title}`);
+    },
+    [updatePrefs],
+  );
+
+  // Non-streaming fallback (used when streaming is unavailable).
+  const generateStoryOnce = useCallback(async () => {
+    const res = await fetch("/api/story", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ setting: storySetting, detail: storyDetail }),
+    });
+    const json = (await res.json()) as {
+      ok?: boolean;
+      error?: string;
+      story?: { title: string; paragraphs: string[]; minutes: number };
+    };
+    if (!res.ok || !json.ok || !json.story) {
+      setStoryGenError(json.error || "Could not create a story right now.");
+      return;
+    }
+    finalizeStory(json.story.title, json.story.paragraphs);
+  }, [storySetting, storyDetail, finalizeStory]);
+
+  const generateStory = useCallback(async () => {
+    setGeneratingStory(true);
+    setStoryGenError(null);
+    setStreamPreview(null);
+    try {
+      const res = await fetch("/api/story", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          setting: storySetting,
+          detail: storyDetail,
+          stream: true,
+        }),
+      });
+
+      // Fall back to the non-streaming path if streaming isn't available.
+      if (!res.ok || !res.body) {
+        await generateStoryOnce();
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let full = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        full += decoder.decode(value, { stream: true });
+        const preview = parseStreamedStory(full);
+        if (preview) setStreamPreview(preview);
+      }
+
+      const finalStory = parseStreamedStory(full);
+      if (!finalStory || finalStory.paragraphs.length === 0) {
+        // Nothing usable streamed through — try the structured endpoint once.
+        await generateStoryOnce();
+        return;
+      }
+      finalizeStory(finalStory.title, finalStory.paragraphs);
     } catch {
-      setStoryGenError("Could not create a story right now.");
+      // Network/stream error: last-ditch attempt at the non-streaming path.
+      try {
+        await generateStoryOnce();
+      } catch {
+        setStoryGenError("Could not create a story right now.");
+      }
     } finally {
       setGeneratingStory(false);
+      setStreamPreview(null);
     }
-  }, [storySetting, storyDetail, updatePrefs]);
+  }, [storySetting, storyDetail, generateStoryOnce, finalizeStory]);
 
   const activeSounds = useMemo(() => {
     if (!prefs) return [];
@@ -1115,6 +1177,21 @@ export function SleepApp() {
                           Cancel
                         </button>
                       </div>
+                      {streamPreview && (
+                        <div
+                          className="mt-1 max-h-56 overflow-y-auto border border-border/60 p-3 text-sm leading-relaxed text-muted"
+                          aria-live="polite"
+                        >
+                          <p className="display mb-2 text-foreground">
+                            {streamPreview.title}
+                          </p>
+                          {streamPreview.paragraphs.map((p, i) => (
+                            <p key={i} className="mb-2">
+                              {p}
+                            </p>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
