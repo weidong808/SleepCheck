@@ -2,7 +2,16 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { Analytics } from "@/components/Analytics";
 import { AppHeader } from "@/components/AppHeader";
-import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE, APP_URL } from "@/lib/brand";
+import {
+  APP_DESCRIPTION,
+  APP_ICON_APPLE,
+  APP_ICON_PNG_192,
+  APP_ICON_PNG_512,
+  APP_ICON_SRC,
+  APP_NAME,
+  APP_TAGLINE,
+  APP_URL,
+} from "@/lib/brand";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -53,10 +62,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: APP_ICON_SRC, type: "image/svg+xml" },
+      { url: APP_ICON_PNG_192, sizes: "192x192", type: "image/png" },
+      { url: APP_ICON_PNG_512, sizes: "512x512", type: "image/png" },
     ],
-    apple: "/apple-touch-icon.png",
+    apple: APP_ICON_APPLE,
   },
 };
 

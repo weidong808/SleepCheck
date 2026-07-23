@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="SleepCheck">
+  <rect width="512" height="512" rx="96" fill="#3ecf8e"/>
+  <defs>
+    <mask id="moon">
+      <rect width="512" height="512" fill="black"/>
+      <circle cx="248" cy="256" r="148" fill="white"/>
+      <circle cx="310" cy="214" r="116" fill="black"/>
+    </mask>
+  </defs>
+  <rect width="512" height="512" fill="#04140e" mask="url(#moon)"/>
+</svg>

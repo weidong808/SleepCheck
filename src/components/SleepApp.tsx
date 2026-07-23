@@ -15,6 +15,9 @@ import { BREATH_MODES } from "@/lib/breath";
 import { SeriesAppsStrip } from "@/components/SeriesAppsStrip";
 import { SiteHomeLink } from "@/components/SiteHomeLink";
 import {
+  APP_ICON_PNG_192,
+  APP_ICON_PNG_512,
+  APP_ICON_SRC,
   APP_NAME,
   APP_TAGLINE,
   HABITCHECK_URL,
@@ -246,8 +249,8 @@ export function SleepApp() {
       title: nowTitle,
       artist: APP_NAME,
       artwork: [
-        { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
-        { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
+        { src: APP_ICON_PNG_192, sizes: "192x192", type: "image/png" },
+        { src: APP_ICON_PNG_512, sizes: "512x512", type: "image/png" },
       ],
     });
     ms.playbackState = "playing";
@@ -1142,11 +1145,12 @@ export function SleepApp() {
             <div className="max-w-sm">
               <div className="flex items-center gap-2.5">
                 <Image
-                  src="/icon-192.png"
+                  src={APP_ICON_SRC}
                   alt=""
                   width={28}
                   height={28}
-                  className="h-7 w-7 rounded-md border border-border"
+                  unoptimized
+                  className="h-7 w-7 rounded-md border border-accent/30"
                 />
                 <span className="display text-lg text-foreground">{APP_NAME}</span>
               </div>

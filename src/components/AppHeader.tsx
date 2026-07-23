@@ -5,7 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { SiteHomeLink } from "@/components/SiteHomeLink";
-import { APP_NAME, APP_TAGLINE, SITE_SERIES_NAME } from "@/lib/brand";
+import {
+  APP_ICON_SRC,
+  APP_NAME,
+  APP_TAGLINE,
+  SITE_SERIES_NAME,
+} from "@/lib/brand";
 
 const NAV: { href: string; label: string; exact?: boolean }[] = [
   { href: "/", label: "Tonight", exact: true },
@@ -35,12 +40,13 @@ export function AppHeader({ trailing }: AppHeaderProps) {
           aria-label={`${APP_NAME} home`}
         >
           <Image
-            src="/icon-192.png"
+            src={APP_ICON_SRC}
             alt=""
             width={36}
             height={36}
             priority
-            className="h-9 w-9 shrink-0 rounded-lg border border-border transition-colors group-hover:border-accent/50"
+            unoptimized
+            className="h-9 w-9 shrink-0 rounded-lg border border-accent/30 bg-[color-mix(in_srgb,var(--accent)_12%,var(--card))] shadow-[0_0_0_1px_color-mix(in_srgb,var(--accent)_18%,transparent)] transition-[border-color,box-shadow] duration-160 group-hover:border-accent/60 group-hover:shadow-[0_0_0_1px_color-mix(in_srgb,var(--accent)_40%,transparent)]"
           />
           <span className="min-w-0">
             <span className="display block truncate text-lg leading-none text-foreground transition-colors group-hover:text-accent sm:text-xl">

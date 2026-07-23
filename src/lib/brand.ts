@@ -21,6 +21,11 @@ export const LINKEDIN_ARTICLE_URL =
   "https://www.linkedin.com/pulse/ai-action-2-from-idea-sleepcheck-weidong-shi-0fwrc";
 export const LINKEDIN_ARTICLE_LABEL = "LinkedIn article";
 export const WS_MARK_SRC = "/ws-mark.svg";
+/** App brand mark (SVG source of truth; PNGs generated via scripts/gen-icons.js). */
+export const APP_ICON_SRC = "/app-icon.svg";
+export const APP_ICON_PNG_192 = "/icon-192.png";
+export const APP_ICON_PNG_512 = "/icon-512.png";
+export const APP_ICON_APPLE = "/apple-touch-icon.png";
 export const RETIRECHECK_URL = "https://retirecheck.weidong-shi.com";
 export const READINESS_URL = "https://readiness.weidong-shi.com";
 export const HABITCHECK_URL = "https://habitcheck.weidong-shi.com";

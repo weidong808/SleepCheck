@@ -1,10 +1,12 @@
 // SleepCheck service worker — offline app shell + ambience + scene art.
-const CACHE = "sleepcheck-v5";
+const CACHE = "sleepcheck-v6";
 const SHELL = [
   "/",
   "/about",
+  "/app-icon.svg",
   "/icon-192.png",
   "/icon-512.png",
+  "/apple-touch-icon.png",
   "/stories/forest.svg",
   "/stories/cove.svg",
   "/stories/cottage.svg",
