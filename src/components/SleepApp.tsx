@@ -60,6 +60,7 @@ import {
   MAX_DETAIL_LENGTH,
   STORY_SETTINGS,
   estimateMinutes,
+  MIN_PARAGRAPHS,
   parseStreamedStory,
 } from "@/lib/ai/story";
 import {
@@ -292,8 +293,8 @@ export function SleepApp() {
       }
 
       const finalStory = parseStreamedStory(full);
-      if (!finalStory || finalStory.paragraphs.length === 0) {
-        // Nothing usable streamed through — try the structured endpoint once.
+      // Require the same completeness as the JSON path; otherwise fall back.
+      if (!finalStory || finalStory.paragraphs.length < MIN_PARAGRAPHS) {
         await generateStoryOnce();
         return;
       }
