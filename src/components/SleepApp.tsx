@@ -57,6 +57,13 @@ import {
 } from "@/lib/speech";
 import { STORIES, type Story } from "@/lib/stories";
 import {
+  MAX_DETAIL_LENGTH,
+  STORY_SETTINGS,
+  estimateMinutes,
+  MIN_PARAGRAPHS,
+  parseStreamedStory,
+} from "@/lib/ai/story";
+import {
   type BreathModeId,
   type SleepPreferences,
   type SoundState,
@@ -87,6 +94,17 @@ export function SleepApp() {
   const [streak, setStreak] = useState<StreakStats | null>(null);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [showMixer, setShowMixer] = useState(false);
+  const [aiStories, setAiStories] = useState<Story[]>([]);
+  const [storyAiReady, setStoryAiReady] = useState(false);
+  const [showStoryForm, setShowStoryForm] = useState(false);
+  const [storySetting, setStorySetting] = useState("forest");
+  const [storyDetail, setStoryDetail] = useState("");
+  const [generatingStory, setGeneratingStory] = useState(false);
+  const [storyGenError, setStoryGenError] = useState<string | null>(null);
+  const [streamPreview, setStreamPreview] = useState<{
+    title: string;
+    paragraphs: string[];
+  } | null>(null);
   const [narrators, setNarrators] = useState<Narrator[]>([]);
   const [allVoices, setAllVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [showAllVoices, setShowAllVoices] = useState(false);
@@ -190,15 +208,127 @@ export function SleepApp() {
     setStreak(recordNight());
   }, []);
 
+  // Probe whether AI story generation is configured; hide the entry point if not.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/story")
+      .then((r) => r.json())
+      .then((j: { ready?: boolean }) => {
+        if (!cancelled) setStoryAiReady(Boolean(j?.ready));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const finalizeStory = useCallback(
+    (title: string, paragraphs: string[]) => {
+      const story: Story = {
+        id: `ai-${Date.now()}`,
+        title,
+        meta: `Custom story · about ${estimateMinutes(paragraphs)} min`,
+        image: "",
+        paras: paragraphs,
+      };
+      setAiStories((prev) => [...prev, story]);
+      updatePrefs({ storyId: story.id });
+      setShowStoryForm(false);
+      setStoryDetail("");
+      setStreamPreview(null);
+      setStatusMsg(`New story ready: ${story.title}`);
+    },
+    [updatePrefs],
+  );
+
+  // Non-streaming fallback (used when streaming is unavailable).
+  const generateStoryOnce = useCallback(async () => {
+    const res = await fetch("/api/story", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ setting: storySetting, detail: storyDetail }),
+    });
+    const json = (await res.json()) as {
+      ok?: boolean;
+      error?: string;
+      story?: { title: string; paragraphs: string[]; minutes: number };
+    };
+    if (!res.ok || !json.ok || !json.story) {
+      setStoryGenError(json.error || "Could not create a story right now.");
+      return;
+    }
+    finalizeStory(json.story.title, json.story.paragraphs);
+  }, [storySetting, storyDetail, finalizeStory]);
+
+  const generateStory = useCallback(async () => {
+    setGeneratingStory(true);
+    setStoryGenError(null);
+    setStreamPreview(null);
+    try {
+      const res = await fetch("/api/story", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          setting: storySetting,
+          detail: storyDetail,
+          stream: true,
+        }),
+      });
+
+      // Fall back to the non-streaming path if streaming isn't available.
+      if (!res.ok || !res.body) {
+        await generateStoryOnce();
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let full = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        full += decoder.decode(value, { stream: true });
+        const preview = parseStreamedStory(full);
+        if (preview) setStreamPreview(preview);
+      }
+
+      const finalStory = parseStreamedStory(full);
+      // Require the same completeness as the JSON path; otherwise fall back.
+      if (!finalStory || finalStory.paragraphs.length < MIN_PARAGRAPHS) {
+        await generateStoryOnce();
+        return;
+      }
+      finalizeStory(finalStory.title, finalStory.paragraphs);
+    } catch {
+      // Network/stream error: last-ditch attempt at the non-streaming path.
+      try {
+        await generateStoryOnce();
+      } catch {
+        setStoryGenError("Could not create a story right now.");
+      }
+    } finally {
+      setGeneratingStory(false);
+      setStreamPreview(null);
+    }
+  }, [storySetting, storyDetail, generateStoryOnce, finalizeStory]);
+
   const activeSounds = useMemo(() => {
     if (!prefs) return [];
     return SOUNDS.filter((s) => prefs.sounds[s.id]?.active);
   }, [prefs]);
 
+  const allStories = useMemo(() => [...STORIES, ...aiStories], [aiStories]);
+
   const selectedStory = useMemo(
-    () => STORIES.find((s) => s.id === prefs?.storyId) ?? STORIES[0],
-    [prefs?.storyId],
+    () => allStories.find((s) => s.id === prefs?.storyId) ?? STORIES[0],
+    [allStories, prefs?.storyId],
   );
+
+  // Keep a ref so the narration loop can resolve AI stories without re-binding.
+  const allStoriesRef = useRef<Story[]>(STORIES);
+  useEffect(() => {
+    allStoriesRef.current = allStories;
+  }, [allStories]);
 
   // On mobile, story controls sit under the selected card — scroll them into view
   // so picking a story never leaves Read / Pause / Narrator below the fold.
@@ -421,7 +551,9 @@ export function SleepApp() {
 
   useEffect(() => {
     readNextRef.current = () => {
-      const story = STORIES.find((s) => s.id === storyIdRef.current);
+      const story = allStoriesRef.current.find(
+        (s) => s.id === storyIdRef.current,
+      );
       if (!readingRef.current || !story) return;
       if (paragraphRef.current >= story.paras.length) {
         stopStory();
@@ -979,7 +1111,93 @@ export function SleepApp() {
             className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]"
           >
             <div className="flex flex-col gap-3">
-              {STORIES.map((s) => {
+              {storyAiReady && (
+                <div className="flex flex-col gap-2 border border-border p-3">
+                  {!showStoryForm ? (
+                    <button
+                      type="button"
+                      className="flex min-h-11 items-center justify-center border border-accent/50 px-3 text-sm text-foreground transition-colors hover:border-accent"
+                      onClick={() => {
+                        setShowStoryForm(true);
+                        setStoryGenError(null);
+                      }}
+                    >
+                      ✨ Create a story with AI
+                    </button>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs text-muted" htmlFor="story-setting">
+                        Setting
+                      </label>
+                      <select
+                        id="story-setting"
+                        className="min-h-11 border border-border bg-transparent px-2 text-sm text-foreground"
+                        value={storySetting}
+                        onChange={(e) => setStorySetting(e.target.value)}
+                        disabled={generatingStory}
+                      >
+                        {STORY_SETTINGS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                      <label className="text-xs text-muted" htmlFor="story-detail">
+                        A calming detail (optional)
+                      </label>
+                      <input
+                        id="story-detail"
+                        type="text"
+                        maxLength={MAX_DETAIL_LENGTH}
+                        className="min-h-11 border border-border bg-transparent px-2 text-sm text-foreground"
+                        placeholder="e.g. soft rain, warm lantern"
+                        value={storyDetail}
+                        onChange={(e) => setStoryDetail(e.target.value)}
+                        disabled={generatingStory}
+                      />
+                      {storyGenError && (
+                        <p className="text-xs text-accent" role="alert">
+                          {storyGenError}
+                        </p>
+                      )}
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className="min-h-11 flex-1 border border-accent/60 px-3 text-sm text-foreground transition-colors hover:border-accent disabled:opacity-50"
+                          onClick={generateStory}
+                          disabled={generatingStory}
+                        >
+                          {generatingStory ? "Composing…" : "Generate"}
+                        </button>
+                        <button
+                          type="button"
+                          className="min-h-11 border border-border px-3 text-sm text-muted"
+                          onClick={() => setShowStoryForm(false)}
+                          disabled={generatingStory}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                      {streamPreview && (
+                        <div
+                          className="mt-1 max-h-56 overflow-y-auto border border-border/60 p-3 text-sm leading-relaxed text-muted"
+                          aria-live="polite"
+                        >
+                          <p className="display mb-2 text-foreground">
+                            {streamPreview.title}
+                          </p>
+                          {streamPreview.paragraphs.map((p, i) => (
+                            <p key={i} className="mb-2">
+                              {p}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              {allStories.map((s) => {
                 const selected = selectedStory.id === s.id;
                 return (
                   <div
