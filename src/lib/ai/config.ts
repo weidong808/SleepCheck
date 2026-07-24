@@ -15,7 +15,7 @@ export function getStoryConfig(): StoryConfig {
   return {
     configured: apiKey.length > 0 && !disabled,
     apiKey,
-    model: process.env.STORY_AI_MODEL?.trim() || "gpt-4o-mini",
+    model: process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini",
     baseUrl:
       process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1",
   };

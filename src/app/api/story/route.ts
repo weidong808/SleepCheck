@@ -9,6 +9,8 @@ import {
 } from "@/lib/ai/story";
 
 export const runtime = "nodejs";
+// Allow enough time for the LLM call (incl. streaming) to complete on Vercel.
+export const maxDuration = 30;
 
 function clientIp(req: Request): string {
   const forwarded = req.headers.get("x-forwarded-for");

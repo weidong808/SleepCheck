@@ -1131,13 +1131,17 @@ export function SleepApp() {
                       </label>
                       <select
                         id="story-setting"
-                        className="min-h-11 border border-border bg-transparent px-2 text-sm text-foreground"
+                        className="min-h-11 border border-border bg-card px-2 text-sm text-foreground [color-scheme:dark]"
                         value={storySetting}
                         onChange={(e) => setStorySetting(e.target.value)}
                         disabled={generatingStory}
                       >
                         {STORY_SETTINGS.map((opt) => (
-                          <option key={opt} value={opt}>
+                          <option
+                            key={opt}
+                            value={opt}
+                            className="bg-card text-foreground"
+                          >
                             {opt}
                           </option>
                         ))}
@@ -1654,11 +1658,13 @@ function StoryDetailPanel({
             <select
               value={prefs.voiceName ?? ""}
               onChange={(e) => onChooseNarrator(e.target.value || null)}
-              className="mt-2 w-full border border-border bg-card px-2 py-2 text-sm text-foreground outline-none"
+              className="mt-2 w-full border border-border bg-card px-2 py-2 text-sm text-foreground outline-none [color-scheme:dark]"
             >
-              <option value="">Auto — best available</option>
+              <option value="" className="bg-card text-foreground">
+                Auto — best available
+              </option>
               {allVoices.map((v) => (
-                <option key={v.name} value={v.name}>
+                <option key={v.name} value={v.name} className="bg-card text-foreground">
                   {v.name}
                 </option>
               ))}
