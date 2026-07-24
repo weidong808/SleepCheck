@@ -36,6 +36,11 @@
   border-color: var(--border);
 }
 
+html {
+  /* Dark app: ask the OS to paint native controls (select popups) dark. */
+  color-scheme: dark;
+}
+
 html,
 body {
   min-height: 100%;
@@ -48,6 +53,18 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+}
+
+/* Native <select> lists inherit OS chrome; without explicit option colors,
+   Windows often renders light-on-white text in the open popup. */
+select {
+  color: var(--foreground);
+  background-color: var(--card);
+}
+
+select option {
+  color: var(--foreground);
+  background-color: var(--card);
 }
 
 body::before {
@@ -98,7 +115,8 @@ body::after {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
